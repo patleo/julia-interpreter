@@ -4,4 +4,7 @@ a = 3
 b = 1 + a
 a = a + b
 (5 + 3)
-a = (b + 3) * a / 2 - 3
+abc = a
+function c ( x ) if == x a then print ( 1 ) else print ( 0 ) end  
+print ( a )
+print ( 4 + 3 )

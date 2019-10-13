@@ -149,7 +149,7 @@ class Lexical{
         }else{
             this.curTok = "dne";
             this.curTokCode = "5001";
-            System.out.println(this.curLex + " is an unrecognized token");   
+            //System.out.println(this.curLex + " is an unrecognized token");   
         }
         return this.curLex;
     }
@@ -206,9 +206,14 @@ class Lexical{
 
         try {
             Lexical l = new Lexical(args[0]);
-            System.out.println("\nLexeme\tToken\t\tToken Code\tLine\tPosition");
-            while((l.nextToken()) != "EOF")
-                System.out.println(l.getLexeme() + "\t" + l.getToken() + "\t" + l.getTokenCode() + "\t\t" + l.getLine() + "\t" + l.getPosition());
+            //System.out.println("\nLexeme\tToken\t\tToken Code\tLine\tPosition");
+            System.out.printf("\n%-10s%-17s%-15s%-10s%-10s\n", "Lexeme", "Token", "Token Code", "Line", "Position");
+
+            while((l.nextToken()) != "EOF") {
+                System.out.printf("%-10s%-17s%-15s%-10s%-10s\n", l.getLexeme(), l.getToken(), l.getTokenCode(), l.getLine(), l.getPosition());
+                //System.out.println(l.getLexeme() + "\t" + l.getToken() + "\t" + l.getTokenCode() + "\t\t" + l.getLine() + "\t" + l.getPosition());
+            }
+            
             System.out.println();
         } catch(FileNotFoundException e) {
             System.out.println("File not found: " + e.getMessage().split(" ")[0]);
