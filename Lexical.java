@@ -1,3 +1,11 @@
+/*
+ * Class:       CS4308 Section 2
+ * Term:        Fall 2019
+ * Name:        Patrick Sweeney and Christian Byrne
+ * Instructor:  Deepa Muralidhar
+ * Project:     Deliverable 1 Scanner - Java
+ */
+
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.BufferedReader;
@@ -72,6 +80,7 @@ class Lexical{
         sa = new SourceArray(source); //initialize data structure to store source code
         tokType = initTokenTypes(); //initialize keyword/operator table
     }
+
     Map<String, String> initTokenTypes(){
         Map<String,String> tokType = new HashMap<String, String>();
         // Keywords
@@ -107,6 +116,7 @@ class Lexical{
         // DNE: "dne:5001"
         return tokType;
     }
+
     String getTokenType(String lexeme){
         if(tokType.containsKey(lexeme)){
             return tokType.get(lexeme);
@@ -120,11 +130,13 @@ class Lexical{
             return "DNE"; // Does not exist
         }
     }
+    
     // Splits 2 part token string into String array of token name and token code
     String[] splitTokenString(String tokenString){
         String[] splitString = tokenString.split(":");
         return splitString;
     }
+
     // Returns next token
     String nextToken() throws IOException{
         this.curLex = sa.nextLex();
@@ -141,6 +153,7 @@ class Lexical{
         }
         return this.curLex;
     }
+
    // Determines if lexeme is an integer
     boolean isInteger(String lexeme){
         try{
@@ -150,6 +163,7 @@ class Lexical{
         }
         return true;
     }
+
     // Determines if lexeme is an identifier
     boolean isID(String lexeme){
         // Checks if one character letter
@@ -159,32 +173,46 @@ class Lexical{
             return false;
         }
     }
+
     // Returns current token - slightly different than next token
     String getToken(){
         return this.curTok;
     }
+
     // Returns current token code 
     String getTokenCode(){
         return this.curTokCode;
     }
+
     // Returns current lexeme
     String getLexeme(){
         return this.curLex;
     }
+
     // Returns line number of current lexeme 1...n
     int getLine(){
         return sa.currentLine();   
     }
+
     // Returns position (lexeme count) of current lexeme in line 1...n
     int getPosition(){
         return sa.currentPos();
     }
+
     public static void main(String[] args) throws Exception{
-        Lexical l = new Lexical("hello_julia");
-        System.out.println("\nLexeme\tToken\t\tToken Code\tLine\tPosition");
-        while((l.nextToken()) != "EOF")
-            System.out.println(l.getLexeme() + "\t" + l.getToken() + "\t" + l.getTokenCode() + "\t\t" + l.getLine() + "\t" + l.getPosition());
-        System.out.println();
+        if (args.length <= 0) {
+            throw new Exception("Argument not provided");
+        }
+
+        try {
+            Lexical l = new Lexical(args[0]);
+            System.out.println("\nLexeme\tToken\t\tToken Code\tLine\tPosition");
+            while((l.nextToken()) != "EOF")
+                System.out.println(l.getLexeme() + "\t" + l.getToken() + "\t" + l.getTokenCode() + "\t\t" + l.getLine() + "\t" + l.getPosition());
+            System.out.println();
+        } catch(FileNotFoundException e) {
+            System.out.println("File not found: " + e.getMessage().split(" ")[0]);
+        }
     }
     
 }
