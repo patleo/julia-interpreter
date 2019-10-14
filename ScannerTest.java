@@ -24,10 +24,11 @@ class ScannerTest{
             bw = new BufferedWriter((new FileWriter(outFile)));
             // Initialize LexScanner with filename of source code
             LexScanner l = new LexScanner(args[0]);
-
-        
-            System.out.printf("\n%-10s%-17s%-15s%-10s%-10s\n", "Lexeme", "Token", "Token Code", "Line", "Position");
-            String pStr = "";
+            // Create headers for output file and console
+            String pStr = "".format("\n%-10s%-17s%-15s%-10s%-10s\n", "Lexeme", "Token", "Token Code", "Line", "Position");
+            System.out.print(pStr);
+            bw.write(pStr);
+            // Print token info to console and to file for each lexeme until the next Token is EOF (END OF FILE)
             while(!(l.nextToken()).equals("EOF")){
                 pStr = pStr.format("%-10s%-17s%-15s%-10s%-10s\n", l.getLexeme(), l.getToken(), l.getTokenCode(), l.getLine(), l.getPosition());
                 System.out.print(pStr);
