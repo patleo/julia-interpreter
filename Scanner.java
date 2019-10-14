@@ -3,7 +3,7 @@
  * Term:        Fall 2019
  * Name:        Patrick Sweeney and Christian Byrne
  * Instructor:  Deepa Muralidhar
- * Project:     Deliverable 1 Scanner - Java
+ * Project:     Deliverable 1 Lexical Scanner - Java
  */
 
 import java.io.IOException;
@@ -14,8 +14,8 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 
-// Lexical Analyzer class
-class Lexical{
+// Lexical Scanner class
+class Scanner{
     private SourceArray sa; // stores source code for easy retrieval
     private Map<String,String> tokType; // keyword table
     private String curLex; // current lexeme
@@ -34,6 +34,7 @@ class Lexical{
             File file = new File(source);
             br = new BufferedReader(new FileReader(file));
         }
+
         // Retrieves next line in the buffered reader. Returns false if the buffered reader is EOF
         private boolean newLine() throws IOException{
             String s;
@@ -47,14 +48,17 @@ class Lexical{
                 return false;
             }
         }
+
         // Returns current line 1...n in source code
         int currentLine(){
             return line;
         }
+
         // Returns current position 1...n in current line
         int currentPos(){
             return pos;
         }
+
         // Returns next lexeme in source file. Returns "EOF" if at end of file.
         String nextLex() throws IOException{
             if((line == 0 && pos == 0)||(pos == sourceLine.length)){
@@ -67,6 +71,7 @@ class Lexical{
                 return sourceLine[pos++];
             }
         }
+
         // Prints all lexemes in the source file
         void printAll() throws IOException{
             String s;
@@ -76,7 +81,7 @@ class Lexical{
     }
   
     // Constructor: Feeds source code to SourceArray 
-    Lexical(String source) throws Exception{
+    Scanner(String source) throws Exception{
         sa = new SourceArray(source); //initialize data structure to store source code
         tokType = initTokenTypes(); //initialize keyword/operator table
     }
@@ -205,7 +210,7 @@ class Lexical{
         }
 
         try {
-            Lexical l = new Lexical(args[0]);
+            Scanner l = new Scanner(args[0]);
             //System.out.println("\nLexeme\tToken\t\tToken Code\tLine\tPosition");
             System.out.printf("\n%-10s%-17s%-15s%-10s%-10s\n", "Lexeme", "Token", "Token Code", "Line", "Position");
 
