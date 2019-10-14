@@ -1,9 +1,15 @@
+/*
+ * Class:       CS4308 Section 2
+ * Term:        Fall 2019
+ * Name:        Patrick Sweeney, Christian Byrne, and Sagar Patel
+ * Instructor:  Deepa Muralidhar
+ * Project:     Deliverable 1 Lexical Scanner - Java
+ */
+
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.IOException;
-//import java.io.OutputStreamWriter;
-//import java.io.FileOutputStream;
 
 class ScannerTest{
 
