@@ -3,7 +3,7 @@
  * Term:        Fall 2019
  * Name:        Patrick Sweeney and Christian Byrne
  * Instructor:  Deepa Muralidhar
- * Project:     Deliverable 1 Lexical LexScanner - Java
+ * Project:     Deliverable 1 Lexical Scanner - Java
  */
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 
-// Lexical LexScanner class
+// Lexical Scanner class
 class LexScanner{
     private SourceArray sa; // stores source code for easy retrieval
     private Map<String,String> tokType; // keyword table
