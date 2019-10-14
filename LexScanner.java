@@ -3,7 +3,7 @@
  * Term:        Fall 2019
  * Name:        Patrick Sweeney and Christian Byrne
  * Instructor:  Deepa Muralidhar
- * Project:     Deliverable 1 Lexical Scanner - Java
+ * Project:     Deliverable 1 Lexical LexScanner - Java
  */
 
 import java.io.IOException;
@@ -14,8 +14,8 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 
-// Lexical Scanner class
-class Scanner{
+// Lexical LexScanner class
+class LexScanner{
     private SourceArray sa; // stores source code for easy retrieval
     private Map<String,String> tokType; // keyword table
     private String curLex; // current lexeme
@@ -81,7 +81,7 @@ class Scanner{
     }
   
     // Constructor: Feeds source code to SourceArray 
-    Scanner(String source) throws Exception{
+    LexScanner(String source) throws Exception{
         sa = new SourceArray(source); //initialize data structure to store source code
         tokType = initTokenTypes(); //initialize keyword/operator table
     }
@@ -210,7 +210,7 @@ class Scanner{
         }
 
         try {
-            Scanner l = new Scanner(args[0]);
+            LexScanner l = new LexScanner(args[0]);
             //System.out.println("\nLexeme\tToken\t\tToken Code\tLine\tPosition");
             System.out.printf("\n%-10s%-17s%-15s%-10s%-10s\n", "Lexeme", "Token", "Token Code", "Line", "Position");
 
