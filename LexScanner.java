@@ -1,7 +1,7 @@
 /*
  * Class:       CS4308 Section 2
  * Term:        Fall 2019
- * Name:        Patrick Sweeney and Christian Byrne
+ * Name:        Patrick Sweeney, Christian Byrne, and Sagar Patel
  * Instructor:  Deepa Muralidhar
  * Project:     Deliverable 1 Lexical Scanner - Java
  */
@@ -86,6 +86,7 @@ class LexScanner{
         tokType = initTokenTypes(); //initialize keyword/operator table
     }
 
+    // Initializes the keyword table for tokens that have a single literal representation ex "while", ")", "+" not <integer> or <id>
     Map<String, String> initTokenTypes(){
         Map<String,String> tokType = new HashMap<String, String>();
         // Keywords
@@ -117,12 +118,14 @@ class LexScanner{
         // For reference but not stored in this data structure
         // id, "id:3001"
         // integer, "integer_lt:3002"
-        // EOF: "eof:4001"
-        // DNE: "dne:5001"
+        // EOF: "EOF:4001"
+        // DNE: "DNE:5001"
         return tokType;
     }
-
+    
+    // Returns the token type and token code in one string ex integer_lt:3002
     String getTokenType(String lexeme){
+        // Check if lexeme in keyword table, else determine if one of other possible options
         if(tokType.containsKey(lexeme)){
             return tokType.get(lexeme);
         }else if(isInteger(lexeme)){
@@ -130,7 +133,7 @@ class LexScanner{
         }else if(isID(lexeme)){
             return "identifier:3001";
         }else if(lexeme.equals("EOF")){
-            return "eof:4001";
+            return "EOF:4001";
         }else{
             return "DNE"; // Does not exist
         }
@@ -152,11 +155,10 @@ class LexScanner{
             this.curTok = splitToken[0];
             this.curTokCode = splitToken[1];
         }else{
-            this.curTok = "dne";
-            this.curTokCode = "5001";
-            //System.out.println(this.curLex + " is an unrecognized token");   
+            this.curTok = "DNE";
+            this.curTokCode = "5001";   
         }
-        return this.curLex;
+        return this.curTok;
     }
 
    // Determines if lexeme is an integer
@@ -202,27 +204,6 @@ class LexScanner{
     // Returns position (lexeme count) of current lexeme in line 1...n
     int getPosition(){
         return sa.currentPos();
-    }
-
-    public static void main(String[] args) throws Exception{
-        if (args.length <= 0) {
-            throw new Exception("Argument not provided");
-        }
-
-        try {
-            LexScanner l = new LexScanner(args[0]);
-            //System.out.println("\nLexeme\tToken\t\tToken Code\tLine\tPosition");
-            System.out.printf("\n%-10s%-17s%-15s%-10s%-10s\n", "Lexeme", "Token", "Token Code", "Line", "Position");
-
-            while((l.nextToken()) != "EOF") {
-                System.out.printf("%-10s%-17s%-15s%-10s%-10s\n", l.getLexeme(), l.getToken(), l.getTokenCode(), l.getLine(), l.getPosition());
-                //System.out.println(l.getLexeme() + "\t" + l.getToken() + "\t" + l.getTokenCode() + "\t\t" + l.getLine() + "\t" + l.getPosition());
-            }
-            
-            System.out.println();
-        } catch(FileNotFoundException e) {
-            System.out.println("File not found: " + e.getMessage().split(" ")[0]);
-        }
     }
     
 }
