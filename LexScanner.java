@@ -67,7 +67,7 @@ class LexScanner{
                 }else{
                     return "EOF";
                 }
-                }else{
+            }else{
                 return sourceLine[pos++];
             }
         }
