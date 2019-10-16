@@ -1,10 +1,34 @@
+# Julia Example File
+# Patrick Sweeney
+# Christian Byrne
+# Sagar Patel
+
+# assignment and arithmetic
 a = 2
 4 + 2
 a = 3
 b = 1 + a
 a = a + b
-(5 + 3)
-abc = a
-function c ( x ) if == x a then print ( 1 ) else print ( 0 ) end  
+
+# function definition
+function c ( ) 
+    # if statement, with then and else clauses
+    if == a b 
+    then 
+        print ( 0 + 1 )
+    else 
+        print ( 0 )
+    end  
+end
+
+# function call
+c
+
+# for loop, with print test
+for n = a : + b 1
+    print ( a )
+end
+
+# more print tests
 print ( a )
 print ( 4 + 3 )
