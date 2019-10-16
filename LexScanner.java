@@ -38,10 +38,15 @@ class LexScanner{
         // Retrieves next line in the buffered reader. Returns false if the buffered reader is EOF
         private boolean newLine() throws IOException{
             String s;
+            // reads next line until it finds a non-commented line of code or end of file
+            do{
             s = br.readLine();
+            }while(s != null && s.trim().charAt(0) == '#');
+            
             if(s != null){
-                sourceLine = s.split(" ");
-                    line++;
+                // handles case of multiple spaces or leading spaces
+                sourceLine = s.trim().split(" +");
+                line++;
                 pos = 0;
                 return true;
             }else{
