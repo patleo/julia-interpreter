@@ -90,31 +90,36 @@ class LexScanner{
     Map<String, String> initTokenTypes(){
         Map<String,String> tokType = new HashMap<String, String>();
         // Keywords
-        tokType.put("function","function_kw:1001");
-        tokType.put("end", "end_kw:1002");
-        tokType.put("if", "if_kw:1003");
-        tokType.put("then", "then_kw:1004");
-        tokType.put("else", "else_kw:1005");
-        tokType.put("while", "while_kw:1006");
-        tokType.put("do", "do_kw:1007");
-        tokType.put("repeat", "repeat_kw:1008");
-        tokType.put("until", "until_kw:1009");
-        tokType.put("print", "print_kw:1010");
+        tokType.put("function", "function_kw:1001");
+        tokType.put("end",      "end_kw:1002");
+        tokType.put("if",       "if_kw:1003");
+        tokType.put("then",     "then_kw:1004");
+        tokType.put("else",     "else_kw:1005");
+        tokType.put("while",    "while_kw:1006");
+        tokType.put("do",       "do_kw:1007");
+        tokType.put("repeat",   "repeat_kw:1008");
+        tokType.put("until",    "until_kw:1009");
+        tokType.put("print",    "print_kw:1010");
+        tokType.put("for",      "for_kw:1011");
         // Operators
-        tokType.put("=", "assign_op:2001");
-        tokType.put("<=", "le_op:2002");
-        tokType.put("<", "lt_op:2003");
-        tokType.put(">=", "ge_op:2004");
-        tokType.put(">", "gt_op:2005");
-        tokType.put("==", "eq_op:2006");
-        tokType.put("~=", "ne_op:2007");
-        tokType.put("+", "add_op:2008");
-        tokType.put("-", "sub_op:2009");
-        tokType.put("*", "mult_op:2010");
-        tokType.put("/", "mult_op:2011");
+        tokType.put("=",        "assign_op:2001");
+        tokType.put("<=",       "le_op:2002");
+        tokType.put("<",        "lt_op:2003");
+        tokType.put(">=",       "ge_op:2004");
+        tokType.put(">",        "gt_op:2005");
+        tokType.put("==",       "eq_op:2006");
+        tokType.put("!=",       "ne_op:2007");
+        tokType.put("+",        "add_op:2008");
+        tokType.put("-",        "sub_op:2009");
+        tokType.put("*",        "mult_op:2010");
+        tokType.put("/",        "div_op:2011");
+        tokType.put("%",        "mod_op:2012");
+        tokType.put("\\",       "rev_div_op:2013");  
+        tokType.put("^",        "exp_operator:2014");
+        tokType.put("!",        "neg_operator:2015");
         // String literals
-        tokType.put("(", "open_paren_lt:3003");
-        tokType.put(")", "close_paren_lt:3004");
+        tokType.put("(",        "open_paren_lt:3003");
+        tokType.put(")",        "close_paren_lt:3004");
         // For reference but not stored in this data structure
         // id, "id:3001"
         // integer, "integer_lt:3002"
@@ -205,5 +210,4 @@ class LexScanner{
     int getPosition(){
         return sa.currentPos();
     }
-    
 }
