@@ -41,7 +41,7 @@ class LexScanner{
             // reads next line until it finds a non-commented line of code or end of file
             do{
             s = br.readLine();
-            }while(s != null && s.trim().charAt(0) == '#');
+            }while(s != null && (s.length() < 1 || s.trim().charAt(0) == '#'));
             
             if(s != null){
                 // handles case of multiple spaces or leading spaces
