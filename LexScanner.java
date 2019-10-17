@@ -125,6 +125,7 @@ class LexScanner{
         // String literals
         tokType.put("(",        "open_paren_lt:3003");
         tokType.put(")",        "close_paren_lt:3004");
+        tokType.put(":",        "colon_lt:3005");
         // For reference but not stored in this data structure
         // id, "id:3001"
         // integer, "integer_lt:3002"
