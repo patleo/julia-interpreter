@@ -3,17 +3,10 @@
 # Christian Byrne
 # Sagar Patel
 
-# assignment and arithmetic
-a = 2
-4 + 2
-a = 3
-b = 1 + a
-a = a + b
-
 # function definition
 function c ( ) 
     # if statement, with then and else clauses
-    if == a b 
+    if a == b 
     then 
         print ( 0 + 1 )
     else 
@@ -21,11 +14,18 @@ function c ( )
     end  
 end
 
+# assignment and arithmetic
+a = 2
+4 + 2
+a = 3
+b = 1 + a
+a = a + b
+
 # function call
 c
 
 # for loop, with print test
-for n = a : + b 1
+for n = a : b + 1
     print ( a )
 end
 
