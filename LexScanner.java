@@ -127,7 +127,7 @@ class LexScanner{
         tokType.put(")",        "close_paren_lt:3004");
         tokType.put(":",        "colon_lt:3005");
         // For reference but not stored in this data structure
-        // id, "id:3001"
+        // id, "identifier:3001"
         // integer, "integer_lt:3002"
         // EOF: "EOF:4001"
         // DNE: "DNE:5001"
