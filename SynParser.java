@@ -70,6 +70,8 @@ class SynParser {
             opClass = "relative_op";
         }else if(code >= 2008 & code <= 2015){
             opClass = "arithmetic_op";
+        }else if(code == 2001){
+            opClass = "assignment_op";
         }else{
             opClass = "other";
         }
@@ -93,15 +95,15 @@ class SynParser {
     }
     //Statement 
     Node statement() throws IOException{
-        
         Node result = null;
         if(lexScanner.getToken().equals("if_kw")){
             Node bool;
             lexScanner.nextToken();
             result = boolExp();
         }else if(getOpClass().equals("relative_op")){
-            Node bool;
             result = boolExp();
+        }else if(lexScanner.getToken().equals("identifier")){
+            result = assignStatement();
         }
         Node stmt = createNode("statement", result);
         return createNode("statement", result);
@@ -157,6 +159,20 @@ class SynParser {
         return createNode("binary_expression", result);
     }
     
+    Node assignStatement() throws IOException{
+        String idValue = lexScanner.getLexeme();
+        Node idNode = createLeaf("id", idValue);
+        lexScanner.nextToken();
+        if(getOpClass().equals("assignment_op")){
+            // do nothing
+        }else{
+            error("assignment_operator", lexScanner.getToken());
+        }
+        lexScanner.nextToken();
+        Node arithNode = arithExp();
+        Node result = new Node("assignment_operator", idNode, arithNode, "=");
+        return createNode("assignment_statement", result);
+    }
     
     // Formats error and throws exception
     void error(String expToken, String actToken){
@@ -182,22 +198,40 @@ class SynParser {
     void printOutput(Node n){
         Queue<Node> q = new LinkedList<>();
         q.add(n);
+        String printLits = "";
         while(q.size() > 0){
             Node left, right;
+            left = null;
+            right = null;
             Node node = q.remove();
-            left = node.getLeftNode();
-            right = node.getRightNode();
-            
-            if(right != null){
-                System.out.printf("<%s> -> <%s> <%s>\n", node.getNodeType(),left.getNodeType(),right.getNodeType());
-                q.add(left);
-                q.add(right);
-            }else if(left != null){
-                System.out.printf("<%s> -> <%s>\n",node.getNodeType() ,left.getNodeType());
-                q.add(left);
+            if(node != null){
+                left = node.getLeftNode();
+                right = node.getRightNode();
+                if(right != null){
+                    if(node.getNodeType().equals("assignment_operator")){
+                        System.out.println("<assignment_operator> -> <eq_operator>");
+                    }else{
+                    System.out.printf("<%s> -> <%s> <%s>\n", node.getNodeType(),left.getNodeType(),right.getNodeType());
+                    }
+                    q.add(left);
+                    q.add(right);
+                }else if(left != null){
+                if(node.getNodeType().equals("assignment_statement")){
+                        System.out.printf("<%s> -> %s <%s> <%s>\n", node.getNodeType(), left.getLeftNode().getNodeType(),left.getNodeType(), left.getRightNode().getNodeType());
+                        q.add(left);
+                        q.add(right);
+                    }
+                    else{
+                        System.out.printf("<%s> -> <%s>\n",node.getNodeType() ,left.getNodeType());
+                        q.add(left);
+                    }
+                }
+                if(node.getNodeValue() != null){
+                    printLits += "".format("%s -> <%s>\n", node.getNodeValue(), node.getNodeType());
+                }
             }
         }
-        
+        System.out.println(printLits);
     }
     
     
