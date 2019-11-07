@@ -185,15 +185,17 @@ class SynParser {
         while(q.size() > 0){
             Node left, right;
             Node node = q.remove();
-            if((left = node.getLeftNode()) != null){
+            left = node.getLeftNode();
+            right = node.getRightNode();
+            
+            if(right != null){
+                System.out.printf("<%s> -> <%s> <%s>\n", node.getNodeType(),left.getNodeType(),right.getNodeType());
+                q.add(left);
+                q.add(right);
+            }else if(left != null){
                 System.out.printf("<%s> -> <%s>\n",node.getNodeType() ,left.getNodeType());
                 q.add(left);
             }
-            if((right = node.getRightNode()) != null){
-                System.out.printf("<%s> -> <%s>\n", node.getNodeType(), right.getNodeType());
-                q.add(right);
-            }
-            
         }
         
     }
