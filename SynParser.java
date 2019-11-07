@@ -7,6 +7,8 @@
  */
 
 import java.io.IOException;
+import java.util.Queue;
+import java.util.LinkedList; 
 
 class SynParser {
     private LexScanner lexScanner;
@@ -85,7 +87,8 @@ class SynParser {
         while(!(lexScanner.nextToken()).equals("EOF")){
             result = statement();
             printNode = createNode("block", result);
-            PrintTree(printNode);
+            printTree(printNode);
+            printOutput(printNode);
         }
     }
     //Statement 
@@ -162,7 +165,7 @@ class SynParser {
         }
     }
     // temporary print function
-    void PrintTree(Node n){
+    void printTree(Node n){
         if(n != null){
             System.out.println(n.getNodeType());
             String value;
@@ -170,10 +173,29 @@ class SynParser {
                 System.out.println(" " + value);
             }else{
                 System.out.println();
-                PrintTree(n.getLeftNode());
-                PrintTree(n.getRightNode());
+                printTree(n.getLeftNode());
+                printTree(n.getRightNode());
             }
         }
+    }
+    
+    void printOutput(Node n){
+        Queue<Node> q = new LinkedList<>();
+        q.add(n);
+        while(q.size() > 0){
+            Node left, right;
+            Node node = q.remove();
+            if((left = node.getLeftNode()) != null){
+                System.out.printf("<%s> -> <%s>\n",node.getNodeType() ,left.getNodeType());
+                q.add(left);
+            }
+            if((right = node.getRightNode()) != null){
+                System.out.printf("<%s> -> <%s>\n", node.getNodeType(), right.getNodeType());
+                q.add(right);
+            }
+            
+        }
+        
     }
     
     
