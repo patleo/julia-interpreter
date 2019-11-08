@@ -29,9 +29,9 @@ class ParserTest {
             bw.close();
         } catch(FileNotFoundException e) {
             System.out.println("File not found: " + e.getMessage().split(" ")[0]);
-        } catch(IOException i){
+        } catch(IOException i) {
             System.out.println("IO Exception: " + i.getMessage().split(" ")[0]);
-            if(bw != null){
+            if(bw != null) {
                 bw.close();
             }
         }
