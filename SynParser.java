@@ -229,16 +229,14 @@ class SynParser {
         Node idNode = createLeaf("identifier", idValue);
         lexScanner.nextToken();
 
-        if(getOpClass().equals("assignment_op")){
-            // do nothing
-        }else{
+        if(!getOpClass().equals("assignment_op")) {
             error("assignment_op", lexScanner.getToken());
         }
 
         lexScanner.nextToken();
         Node arithNode = arithExp();
-        Node result = new Node("assignment_operator", "=", idNode, arithNode);
-        return createNode("assignment_statement", result);
+        Node assignLit = createLeaf("assignment_operator", "=");
+        return new Node("assignment_statement", null, idNode, assignLit, arithNode);
     }
     
     Node ifStatement() throws IOException{
@@ -264,18 +262,22 @@ class SynParser {
         Node step = null;
 
         result.addChild(new Node("print_kw", "print"));
+
         if (!lexScanner.getToken().equals("open_paren_lt"))
             error("open_paren_lt", lexScanner.getToken());
+
         result.addChild(new Node("open_paren_lt", "("));
         lexScanner.nextToken();
         step = arithExp();
         result.addChild(step);
         lexScanner.nextToken();
+
         if (!lexScanner.getToken().equals("close_paren_lt"))
             error("close_paren_lt", lexScanner.getToken());
+
         result.addChild(new Node("close_paren_lt", ")"));
 
-        return createNode("print_statement", result);
+        return result;
     }
 
     // Formats error and throws exception
@@ -284,19 +286,30 @@ class SynParser {
             System.out.printf("Expecting %s, received %s\n", expToken, actToken);
         }
     }
+    
+    void printTree(Node n) {
+        printTree(n, 0);
+    }
 
     // temporary print function
-    void printTree(Node n){
+    void printTree(Node n, int depth) {
+        ++depth;
+
+        StringBuilder whitespace = new StringBuilder();
+
         if(n != null){
-            System.out.println(n.getNodeType());
+            for (int i = depth; i > 0; i--) {
+                whitespace.append('-');
+            }
+
+            System.out.println(whitespace.toString() + n.getNodeType());
             String value;
 
             if((value = n.getNodeValue()) != null){
-                System.out.println(" " + value);
+                System.out.println(whitespace.toString() + '+' + value);
             }else{
-                System.out.println();
-                printTree(n.getLeftNode());
-                printTree(n.getRightNode());
+                //System.out.println();
+                for (Node x : n.getChildren()) printTree(x, depth);
             }
         }
     }
@@ -306,8 +319,25 @@ class SynParser {
         q.add(n);
         String printLits = "";
 
+        ArrayList<Node> children;
+        Node node;
+
+        while(q.size() > 0) {
+            node = q.remove();
+            
+            if (node != null) {
+                children = node.getChildren();
+            }
+            
+            if(node.getNodeValue() != null){
+                printLits += "".format("<%s> -> %s\n", node.getNodeType(), node.getNodeValue());
+            }
+        }
+
+        /*
         Node left, right;
         Node node;
+
         while(q.size() > 0){
             left = null;
             right = null;
@@ -342,6 +372,7 @@ class SynParser {
                 }
             }
         }
+        */
 
         System.out.println(printLits);
     }
