@@ -142,7 +142,6 @@ class SynParser {
             break;
 
             case "identifier":
-            lexScanner.nextToken();
             result = assignStatement();
             break;
 
@@ -163,6 +162,7 @@ class SynParser {
 
             default:
             error("unknown", lexScanner.getToken());
+            lexScanner.nextToken();
             break;
         }
 
@@ -226,7 +226,7 @@ class SynParser {
     
     Node assignStatement() throws IOException{
         String idValue = lexScanner.getLexeme();
-        Node idNode = createLeaf("id", idValue);
+        Node idNode = createLeaf("identifier", idValue);
         lexScanner.nextToken();
 
         if(getOpClass().equals("assignment_op")){
@@ -260,14 +260,28 @@ class SynParser {
     }
 
     Node printStatement() throws IOException{
+        Node result = new Node("print_statement", null);
         Node step = null;
-        return createNode("print_statement", step);
+
+        result.addChild(new Node("print_kw", "print"));
+        if (!lexScanner.getToken().equals("open_paren_lt"))
+            error("open_paren_lt", lexScanner.getToken());
+        result.addChild(new Node("open_paren_lt", "("));
+        lexScanner.nextToken();
+        step = arithExp();
+        result.addChild(step);
+        lexScanner.nextToken();
+        if (!lexScanner.getToken().equals("close_paren_lt"))
+            error("close_paren_lt", lexScanner.getToken());
+        result.addChild(new Node("close_paren_lt", ")"));
+
+        return createNode("print_statement", result);
     }
 
     // Formats error and throws exception
     void error(String expToken, String actToken){
         if(!(expToken.equals(actToken))){
-            System.out.printf("Expecting %s received %s\n", expToken, actToken);
+            System.out.printf("Expecting %s, received %s\n", expToken, actToken);
         }
     }
 
