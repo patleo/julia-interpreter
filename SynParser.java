@@ -29,10 +29,9 @@ class SynParser {
         Node(String nodeType, String value, Node ... nodes) {
             nodeList = new ArrayList<Node>();
             this.nodeType = nodeType;
+            this.value = value;
 
             addChild(nodes);
-
-            this.value = value;
         }
 
         // add a single child to a list
@@ -49,12 +48,14 @@ class SynParser {
             for (Node x : children) { addChild(x); }
         }
 
+        ArrayList<Node> getChildren() { return nodeList; }
+        
         // set the parent reference of the node
         void setParent(Node parent) { this.parentNode = parent; }
 
         // get the parent reference of the node
         Node getParent() { return parentNode; }
-        
+
         String getNodeType() {
             return this.nodeType;
         }
@@ -122,14 +123,47 @@ class SynParser {
     Node statement() throws IOException{
         Node result = null;
 
-        if(lexScanner.getToken().equals("if_kw")){
+/*
+        if(lexScanner.getToken().equals("if_kw")) {
             Node bool;
             lexScanner.nextToken();
             result = boolExp();
-        }else if(getOpClass().equals("relative_op")){
+        } else if(getOpClass().equals("relative_op")) {
             result = boolExp();
-        }else if(lexScanner.getToken().equals("identifier")){
+        } else if(lexScanner.getToken().equals("identifier")) {
             result = assignStatement();
+        }
+*/
+
+        switch (lexScanner.getToken()) {
+            case "if_kw":
+            lexScanner.nextToken();
+            result = boolExp();
+            break;
+
+            case "identifier":
+            lexScanner.nextToken();
+            result = assignStatement();
+            break;
+
+            case "while_kw":
+            lexScanner.nextToken();
+            result = whileStatement();
+            break;
+
+            case "print_kw":
+            lexScanner.nextToken();
+            result = printStatement();
+            break;
+
+            case "for_kw":
+            lexScanner.nextToken();
+            result = forStatement();
+            break;
+
+            default:
+            error("unknown", lexScanner.getToken());
+            break;
         }
 
         Node stmt = createNode("statement", result);
@@ -152,7 +186,7 @@ class SynParser {
             node = createNode(opString,left,right);
         } else {
             //throw error
-            error("Relative Operator", lexScanner.getToken());
+            error("relative_op", lexScanner.getToken());
         }
         return createNode("boolean_expression", node);
     }
@@ -160,7 +194,7 @@ class SynParser {
     // Arithmetic expression
     Node arithExp() throws IOException{
         Node node;
-        if(lexScanner.getToken().equals("id") | lexScanner.getToken().equals("integer_lt")){
+        if(lexScanner.getToken().equals("identifier") | lexScanner.getToken().equals("integer_lt")){
             //make leaf node with token type and value
             node = createLeaf(lexScanner.getToken(), lexScanner.getLexeme());
         }else{
@@ -184,7 +218,7 @@ class SynParser {
             right = arithExp();
             result = createNode(opString, left, right);
         }else{
-            error("Arrithmetic Operator", lexScanner.getToken());
+            error("arithmetic_op", lexScanner.getToken());
         }
 
         return createNode("binary_expression", result);
@@ -198,7 +232,7 @@ class SynParser {
         if(getOpClass().equals("assignment_op")){
             // do nothing
         }else{
-            error("assignment_operator", lexScanner.getToken());
+            error("assignment_op", lexScanner.getToken());
         }
 
         lexScanner.nextToken();
@@ -207,6 +241,29 @@ class SynParser {
         return createNode("assignment_statement", result);
     }
     
+    Node ifStatement() throws IOException{
+        return boolExp();
+    }
+
+    Node whileStatement() throws IOException{
+        Node bool = boolExp();
+        lexScanner.nextToken();
+        Node statement = statement();
+        Node result = new Node("while_kw", "while", bool, statement);
+
+        return createNode("while_statement", result);
+    }
+    
+    Node forStatement() throws IOException{
+        Node step = null;
+        return createNode("for_statement", step);
+    }
+
+    Node printStatement() throws IOException{
+        Node step = null;
+        return createNode("print_statement", step);
+    }
+
     // Formats error and throws exception
     void error(String expToken, String actToken){
         if(!(expToken.equals(actToken))){
@@ -235,11 +292,12 @@ class SynParser {
         q.add(n);
         String printLits = "";
 
+        Node left, right;
+        Node node;
         while(q.size() > 0){
-            Node left, right;
             left = null;
             right = null;
-            Node node = q.remove();
+            node = q.remove();
 
             if(node != null){
                 left = node.getLeftNode();
