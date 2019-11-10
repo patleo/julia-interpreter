@@ -206,22 +206,22 @@ class SynParser {
 
     // Binary Expression
     Node binExp() throws IOException{
-        Node result = null;
+        Node result = new Node("binary_expression", null);
+
         if(getOpClass().equals("arithmetic_op")){
             String opString;
             Node left, right;
             
-            opString = lexScanner.getToken();
+            result.addChild(new Node("arithmetic_op", lexScanner.getLexeme()));
             lexScanner.nextToken();
-            left = arithExp();
+            result.addChild(arithExp());
             lexScanner.nextToken();
-            right = arithExp();
-            result = createNode(opString, left, right);
+            result.addChild(arithExp());
         }else{
             error("arithmetic_op", lexScanner.getToken());
         }
 
-        return createNode("binary_expression", result);
+        return result;
     }
     
     Node assignStatement() throws IOException{
@@ -315,18 +315,33 @@ class SynParser {
     }
     
     void printOutput(Node n){
+        StringBuilder out;
         Queue<Node> q = new LinkedList<>();
         q.add(n);
         String printLits = "";
 
         ArrayList<Node> children;
+        ArrayList<String> typeArray;
         Node node;
 
         while(q.size() > 0) {
             node = q.remove();
             
             if (node != null) {
+                out = new StringBuilder();
                 children = node.getChildren();
+
+                out.append("<" + node.getNodeType() + "> -> ");
+
+                if (children.size() > 0) {
+                    for (Node x : children) {
+                        out.append("<" + x.getNodeType() + "> ");
+                        q.add(x);
+                    }
+                    
+                    out.append("\b\n");
+                    printLits += out.toString();
+                }
             }
             
             if(node.getNodeValue() != null){
