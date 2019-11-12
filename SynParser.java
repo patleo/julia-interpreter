@@ -112,10 +112,9 @@ class SynParser {
     void parse() throws IOException {
         Node result, printNode;
         while(!(lexScanner.nextToken()).equals("EOF")){
-            result = statement();
-            printNode = createNode("block", result);
-            printTree(printNode);
-            printOutput(printNode);
+            result = block();
+            printTree(result);
+            printOutput(result);
         }
     }
 
@@ -165,6 +164,12 @@ class SynParser {
 
         Node stmt = createNode("statement", result);
         return createNode("statement", result);
+    }
+
+    Node block() throws IOException {
+        Node result = new Node("block", null);
+        result.addChild(statement());
+        return result;
     }
 
     // Boolean expression
@@ -261,13 +266,13 @@ class SynParser {
         result.addChild(boolExp());
         lexScanner.nextToken();
 
-        result.addChild(statement());
+        result.addChild(block());
         lexScanner.nextToken();
 
         if(lexScanner.getToken().equals("else_kw")) {
             result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
             lexScanner.nextToken();
-            result.addChild(statement());
+            result.addChild(block());
             lexScanner.nextToken();
         }
 
@@ -286,7 +291,7 @@ class SynParser {
         result.addChild(new Node("while_kw", "while"));
         result.addChild(boolExp());
         lexScanner.nextToken();
-        result.addChild(statement());
+        result.addChild(block());
         lexScanner.nextToken();
 
         if(!lexScanner.getToken().equals("end_kw")) {
@@ -318,7 +323,7 @@ class SynParser {
         result.addChild(iter());
         lexScanner.nextToken();
 
-        result.addChild(statement());
+        result.addChild(block());
         lexScanner.nextToken();
 
         if(!lexScanner.getToken().equals("end_kw")) {
@@ -339,7 +344,7 @@ class SynParser {
         if (!lexScanner.getToken().equals("open_paren_lt"))
             error("open_paren_lt", lexScanner.getToken());
 
-        result.addChild(new Node("open_paren_lt", "("));
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
         lexScanner.nextToken();
         step = arithExp();
         result.addChild(step);
@@ -348,7 +353,7 @@ class SynParser {
         if (!lexScanner.getToken().equals("close_paren_lt"))
             error("close_paren_lt", lexScanner.getToken());
 
-        result.addChild(new Node("close_paren_lt", ")"));
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
 
         return result;
     }
@@ -387,11 +392,13 @@ class SynParser {
         }
     }
 
+    // test if a node contains a keyword or literal
     boolean isKeyword(Node node) {
         String nodeType = node.getNodeType();
         return (nodeType.matches("(.*(_kw|_lt))|(assign_op)"));
     }
     
+    // prints the syntactic rules of the node
     void printOutput(Node n){
         StringBuilder out;
         Queue<Node> q = new LinkedList<>();
@@ -430,7 +437,7 @@ class SynParser {
             }
             
             if(node.getNodeValue() != null && !isKeyword(node)){
-                printLits += "".format("<%s> -> %s\n", node.getNodeType(), node.getNodeValue());
+                printLits += "".format("<%s> -> '%s'\n", node.getNodeType(), node.getNodeValue());
             }
         }
 
