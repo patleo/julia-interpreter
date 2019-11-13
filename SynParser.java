@@ -518,7 +518,9 @@ class SynParser {
                         for (Node x : children) {
                             if (isKeyword(x)) {
                                 out.append(x.getNodeValue() + ' ');
-                            }else {
+                            } else if (x.getNodeType().equals("identifier")) {
+                                out.append("id ");
+                            } else {
                                 out.append("<" + x.getNodeType() + "> ");
                             }
 
@@ -540,7 +542,11 @@ class SynParser {
             }
             
             if(node.getNodeValue() != null && !isKeyword(node)){
-                printLits += "".format("<%s> -> '%s'\n", node.getNodeType(), node.getNodeValue());
+                if (node.getNodeType().equals("identifier")) {
+                    printLits += "".format("%s -> '%s'\n", "id", node.getNodeValue());
+                } else {
+                    printLits += "".format("<%s> -> '%s'\n", node.getNodeType(), node.getNodeValue());
+                }
             }
         }
 
