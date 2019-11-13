@@ -411,7 +411,7 @@ class SynParser {
             result.raiseError("assign_op", lexScanner);
         }
 
-        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        result.addChild(new Node("assignment_op", lexScanner.getLexeme()));
         lexScanner.nextToken();
 
         result.addChild(iter());
