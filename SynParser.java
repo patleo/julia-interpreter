@@ -123,7 +123,7 @@ class SynParser {
     // test if a node contains a keyword or literal
     boolean isKeyword(Node node) {
         String nodeType = node.getNodeType();
-        return (nodeType.matches("(.*(_kw|paren_lt))"));
+        return (nodeType.matches("(.*(_kw|(paren|colon)_lt))"));
     }
     
     String getOpClass() {
