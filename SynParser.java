@@ -8,6 +8,7 @@
 
 import java.io.IOException;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.LinkedList; 
 import java.util.ArrayList; 
 
@@ -88,7 +89,7 @@ class SynParser {
         void raiseError(String expToken, String actToken) { 
             if(!(expToken.equals(actToken))){
                 System.out.printf("Expecting %s, received %s\n", expToken, actToken);
-                this.errorCode = 1;
+                this.errorCode = 2;
             }
         }
         
@@ -106,7 +107,7 @@ class SynParser {
     // test if a node contains a keyword or literal
     boolean isKeyword(Node node) {
         String nodeType = node.getNodeType();
-        return (nodeType.matches("(.*(_kw|_lt))|(assign_op)"));
+        return (nodeType.matches("(.*(_kw|_lt))"));
     }
     
     String getOpClass() {
@@ -137,11 +138,56 @@ class SynParser {
         Node result;
         lexScanner.nextToken();
 
-        while(!(lexScanner.getToken()).equals("EOF")){
-            result = block();
-            printTree(result);
-            printOutput(result);
+        result = program();
+        printTree(result);
+        printOutput(result);
+    }
+
+    Node program() throws IOException {
+        Node result = new Node("program", null);
+        
+        if(!lexScanner.getToken().equals("function_kw")) {
+            result.raiseError("function_kw", lexScanner.getToken());
+            return result;
         }
+
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        lexScanner.nextToken();
+
+        if (!lexScanner.getToken().equals("identifier")) {
+            result.raiseError("identifier", lexScanner.getToken());
+            return result;
+        }
+
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        lexScanner.nextToken();
+
+        if (!lexScanner.getToken().equals("open_paren_lt")) {
+            result.raiseError("open_paren_lt", lexScanner.getToken());
+            return result;
+        }
+
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        lexScanner.nextToken();
+
+        if (!lexScanner.getToken().equals("close_paren_lt")) {
+            result.raiseError("close_paren_lt", lexScanner.getToken());
+            return result;
+        }
+
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        lexScanner.nextToken();
+
+        result.addChild(block());
+
+        if (!lexScanner.getToken().equals("end_kw")) {
+            result.raiseError("end_kw", lexScanner.getToken());
+            return result;
+        }
+
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+
+        return result;
     }
 
     Node block() throws IOException {
@@ -246,12 +292,12 @@ class SynParser {
 
         lexScanner.nextToken();
 
-        if(!getOpClass().equals("assign_op")) {
-            result.raiseError("assign_op", lexScanner.getToken());
+        if(!getOpClass().equals("assignment_op")) {
+            result.raiseError("assignment_op", getOpClass());
         }
 
         lexScanner.nextToken();
-        Node assignLit = createLeaf("assign_op", "=");
+        Node assignLit = createLeaf("assignment_op", "=");
         result.addChild(idNode, assignLit, arithExp()); 
         return result;
     }
@@ -426,7 +472,8 @@ class SynParser {
     // prints the syntactic rules of the node
     void printOutput(Node n){
         StringBuilder out;
-        Queue<Node> q = new LinkedList<>();
+        Stack<Node> q = new Stack<>();
+        Stack<Node> i = new Stack<>();
         q.add(n);
         String printLits = "";
 
@@ -435,7 +482,7 @@ class SynParser {
         Node node;
 
         while(q.size() > 0) {
-            node = q.remove();
+            node = q.pop();
             
             if (node != null) {
                 out = new StringBuilder();
@@ -452,11 +499,15 @@ class SynParser {
                                 out.append("<" + x.getNodeType() + "> ");
                             }
 
-                            q.add(x);
+                            i.add(x);
                         }
                         
                         out.append("\b\n");
                         printLits += out.toString();
+                    }
+
+                    while (i.size() > 0) {
+                        q.add(i.pop());
                     }
                 }
             }
