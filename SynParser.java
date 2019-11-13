@@ -19,17 +19,23 @@ class SynParser {
         private ArrayList<Node> nodeList;
         private String nodeType;
         private String value;
+
+        private int errorCode;
         
         Node() {
             nodeList = new ArrayList<Node>();
+
             this.nodeType = null;
             this.value = null;
+            this.errorCode = 0;
         }
 
         Node(String nodeType, String value, Node ... nodes) {
             nodeList = new ArrayList<Node>();
+
             this.nodeType = nodeType;
             this.value = value;
+            this.errorCode = 0;
 
             addChild(nodes);
         }
@@ -39,12 +45,13 @@ class SynParser {
             if (child != null) {
                 child.setParent(this);
                 nodeList.add(child);
+                if (child.getError() != 0) { this.errorCode = 1; }
             }
         }
 
         // add an array of children to the list.
         // array is expected to be in left-to-right order.
-        void addChild(Node[] children) {
+        void addChild(Node ... children) {
             for (Node x : children) { addChild(x); }
         }
 
@@ -75,6 +82,15 @@ class SynParser {
                 return nodeList.get(1);
             else return null;
         }
+
+        int getError() { return this.errorCode; }
+
+        void raiseError(String expToken, String actToken) { 
+            if(!(expToken.equals(actToken))){
+                System.out.printf("Expecting %s, received %s\n", expToken, actToken);
+                this.errorCode = 1;
+            }
+        }
         
     }
 
@@ -86,10 +102,17 @@ class SynParser {
     Node createLeaf(String nodeType, String value) {
         return new Node(nodeType, value);
     }
+
+    // test if a node contains a keyword or literal
+    boolean isKeyword(Node node) {
+        String nodeType = node.getNodeType();
+        return (nodeType.matches("(.*(_kw|_lt))|(assign_op)"));
+    }
     
     String getOpClass() {
         String opClass = null;
         int code = Integer.parseInt(lexScanner.getTokenCode());
+
         if(code >= 2002 && code <= 2007){
             opClass = "relative_op";
         }else if(code >= 2008 && code <= 2015){
@@ -99,6 +122,7 @@ class SynParser {
         }else{
             opClass = "other";
         }
+
         return opClass;
     }
     
@@ -110,29 +134,31 @@ class SynParser {
     
     //Drives the parsing process
     void parse() throws IOException {
-        Node result, printNode;
-        while(!(lexScanner.nextToken()).equals("EOF")){
+        Node result;
+        lexScanner.nextToken();
+
+        while(!(lexScanner.getToken()).equals("EOF")){
             result = block();
             printTree(result);
             printOutput(result);
         }
     }
 
+    Node block() throws IOException {
+        Node result = new Node("block", null);
+        result.addChild(statement());
+        lexScanner.nextToken();
+
+        if (result.getError() == 0 && !lexScanner.getToken().matches("(EOF)|((else|end)_kw)"))
+            result.addChild(block());
+
+        return result;
+    }
+
     //Statement 
     Node statement() throws IOException{
+        Node statement = new Node("statement", null);
         Node result = null;
-
-/*
-        if(lexScanner.getToken().equals("if_kw")) {
-            Node bool;
-            lexScanner.nextToken();
-            result = boolExp();
-        } else if(getOpClass().equals("relative_op")) {
-            result = boolExp();
-        } else if(lexScanner.getToken().equals("identifier")) {
-            result = assignStatement();
-        }
-*/
 
         switch (lexScanner.getToken()) {
             case "if_kw":
@@ -144,11 +170,10 @@ class SynParser {
             break;
 
             case "while_kw":
-            lexScanner.nextToken();
             result = whileStatement();
+            break;
 
             case "print_kw":
-            lexScanner.nextToken();
             result = printStatement();
             break;
 
@@ -157,19 +182,12 @@ class SynParser {
             break;
 
             default:
-            error("unknown", lexScanner.getToken());
-            lexScanner.nextToken();
+            statement.raiseError("unknown", lexScanner.getToken());
             break;
         }
 
-        Node stmt = createNode("statement", result);
-        return createNode("statement", result);
-    }
-
-    Node block() throws IOException {
-        Node result = new Node("block", null);
-        result.addChild(statement());
-        return result;
+        statement.addChild(result);
+        return statement;
     }
 
     // Boolean expression
@@ -223,18 +241,19 @@ class SynParser {
     }
     
     Node assignStatement() throws IOException{
-        String idValue = lexScanner.getLexeme();
-        Node idNode = createLeaf("identifier", idValue);
+        Node result = new Node("assignment_statement", null);
+        Node idNode = createLeaf("identifier", lexScanner.getLexeme());
+
         lexScanner.nextToken();
 
-        if(!getOpClass().equals("assignment_op")) {
-            error("assignment_op", lexScanner.getToken());
+        if(!getOpClass().equals("assign_op")) {
+            result.raiseError("assign_op", lexScanner.getToken());
         }
 
         lexScanner.nextToken();
-        Node arithNode = arithExp();
         Node assignLit = createLeaf("assign_op", "=");
-        return new Node("assignment_statement", null, idNode, assignLit, arithNode);
+        result.addChild(idNode, assignLit, arithExp()); 
+        return result;
     }
 
     Node iter() throws IOException {
@@ -257,7 +276,7 @@ class SynParser {
         Node result = new Node("if_statement", null);
 
         if(!lexScanner.getToken().equals("if_kw")) {
-            error("if_kw", lexScanner.getToken());
+            result.raiseError("if_kw", lexScanner.getToken());
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -267,13 +286,11 @@ class SynParser {
         lexScanner.nextToken();
 
         result.addChild(block());
-        lexScanner.nextToken();
 
         if(lexScanner.getToken().equals("else_kw")) {
             result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
             lexScanner.nextToken();
             result.addChild(block());
-            lexScanner.nextToken();
         }
 
         
@@ -288,14 +305,19 @@ class SynParser {
 
     Node whileStatement() throws IOException{
         Node result = new Node("while_statement", null);
-        result.addChild(new Node("while_kw", "while"));
+
+        if(!lexScanner.getToken().equals("while_kw")) {
+            result.raiseError("while_kw", lexScanner.getToken());
+        }
+
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        lexScanner.nextToken();
         result.addChild(boolExp());
         lexScanner.nextToken();
         result.addChild(block());
-        lexScanner.nextToken();
 
         if(!lexScanner.getToken().equals("end_kw")) {
-            error("end_kw", lexScanner.getToken());
+            result.raiseError("end_kw", lexScanner.getToken());
         }
 
         return result;
@@ -303,18 +325,23 @@ class SynParser {
     
     Node forStatement() throws IOException{
         Node result = new Node("for_statement", null);
+
+        if(!lexScanner.getToken().equals("for_kw")) {
+            result.raiseError("for_kw", lexScanner.getToken());
+        }
+
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
         lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("identifier")) {
-            error("identifier", lexScanner.getToken());
+            result.raiseError("identifier", lexScanner.getToken());
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
         lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("assign_op")) {
-            error("assign_op", lexScanner.getToken());
+            result.raiseError("assign_op", lexScanner.getToken());
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -324,10 +351,9 @@ class SynParser {
         lexScanner.nextToken();
 
         result.addChild(block());
-        lexScanner.nextToken();
 
         if(!lexScanner.getToken().equals("end_kw")) {
-            error("end_kw", lexScanner.getToken());
+            result.raiseError("end_kw", lexScanner.getToken());
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -339,7 +365,12 @@ class SynParser {
         Node result = new Node("print_statement", null);
         Node step = null;
 
-        result.addChild(new Node("print_kw", "print"));
+        if(!lexScanner.getToken().equals("print_kw")) {
+            result.raiseError("print_kw", lexScanner.getToken());
+        }
+
+        result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("open_paren_lt"))
             error("open_paren_lt", lexScanner.getToken());
@@ -391,12 +422,6 @@ class SynParser {
             }
         }
     }
-
-    // test if a node contains a keyword or literal
-    boolean isKeyword(Node node) {
-        String nodeType = node.getNodeType();
-        return (nodeType.matches("(.*(_kw|_lt))|(assign_op)"));
-    }
     
     // prints the syntactic rules of the node
     void printOutput(Node n){
@@ -440,46 +465,6 @@ class SynParser {
                 printLits += "".format("<%s> -> '%s'\n", node.getNodeType(), node.getNodeValue());
             }
         }
-
-        /*
-        Node left, right;
-        Node node;
-
-        while(q.size() > 0){
-            left = null;
-            right = null;
-            node = q.remove();
-
-            if(node != null){
-                left = node.getLeftNode();
-                right = node.getRightNode();
-
-                if(right != null){
-                    if(node.getNodeType().equals("assignment_operator")) {
-                        System.out.println("<assignment_operator> -> <eq_operator>");
-                    } else {
-                        System.out.printf("<%s> -> <%s> <%s>\n", node.getNodeType(),left.getNodeType(),right.getNodeType());
-                    }
-
-                    q.add(left);
-                    q.add(right);
-                } else if(left != null) {
-                    if(node.getNodeType().equals("assignment_statement")) {
-                        System.out.printf("<%s> -> %s <%s> <%s>\n", node.getNodeType(), left.getLeftNode().getNodeType(),left.getNodeType(), left.getRightNode().getNodeType());
-                        q.add(left);
-                        q.add(right);
-                    } else {
-                        System.out.printf("<%s> -> <%s>\n",node.getNodeType() ,left.getNodeType());
-                        q.add(left);
-                    }
-                }
-
-                if(node.getNodeValue() != null){
-                    printLits += "".format("%s -> <%s>\n", node.getNodeValue(), node.getNodeType());
-                }
-            }
-        }
-        */
 
         System.out.println(printLits);
     }
