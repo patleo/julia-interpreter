@@ -21,14 +21,20 @@ class SynParser {
         private String nodeType;
         private String value;
 
-        private int errorCode;
+        private int     errorCode;
+        private int     errorLine;
+        private int     errorPos;
+        private String  errorExpected;
         
         Node() {
             nodeList = new ArrayList<Node>();
 
             this.nodeType = null;
             this.value = null;
+
             this.errorCode = 0;
+            this.errorLine = 0;
+            this.errorPos  = 0;
         }
 
         Node(String nodeType, String value, Node ... nodes) {
@@ -36,7 +42,10 @@ class SynParser {
 
             this.nodeType = nodeType;
             this.value = value;
+
             this.errorCode = 0;
+            this.errorLine = 0;
+            this.errorPos  = 0;
 
             addChild(nodes);
         }
@@ -86,10 +95,17 @@ class SynParser {
 
         int getError() { return this.errorCode; }
 
-        void raiseError(String expToken, String actToken) { 
-            if(!(expToken.equals(actToken))){
-                System.out.printf("Expecting %s, received %s\n", expToken, actToken);
-                this.errorCode = 2;
+        int getErrorLine()      { return this.errorLine; }
+        int getErrorPos()       { return this.errorPos; }
+        String getErrorToken()  { return this.errorExpected; }
+
+        void raiseError(String expToken, LexScanner scanner) { 
+            if(!(expToken.equals(scanner.getToken()))){
+                System.out.printf("Expecting %s, received %s\n", expToken, scanner.getToken());
+                this.errorCode      = 2;
+                this.errorLine      = scanner.getLine();
+                this.errorPos       = scanner.getPosition();
+                this.errorExpected  = expToken;
             }
         }
         
@@ -134,20 +150,25 @@ class SynParser {
     }
     
     //Drives the parsing process
-    void parse() throws IOException {
+    void parse() throws IOException, Exception {
         Node result;
         lexScanner.nextToken();
 
         result = program();
         printTree(result);
-        printOutput(result);
+
+        try {
+            printOutput(result);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     Node program() throws IOException {
         Node result = new Node("program", null);
         
         if(!lexScanner.getToken().equals("function_kw")) {
-            result.raiseError("function_kw", lexScanner.getToken());
+            result.raiseError("function_kw", lexScanner);
             return result;
         }
 
@@ -155,7 +176,7 @@ class SynParser {
         lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("identifier")) {
-            result.raiseError("identifier", lexScanner.getToken());
+            result.raiseError("identifier", lexScanner);
             return result;
         }
 
@@ -163,7 +184,7 @@ class SynParser {
         lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("open_paren_lt")) {
-            result.raiseError("open_paren_lt", lexScanner.getToken());
+            result.raiseError("open_paren_lt", lexScanner);
             return result;
         }
 
@@ -171,7 +192,7 @@ class SynParser {
         lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("close_paren_lt")) {
-            result.raiseError("close_paren_lt", lexScanner.getToken());
+            result.raiseError("close_paren_lt", lexScanner);
             return result;
         }
 
@@ -181,7 +202,7 @@ class SynParser {
         result.addChild(block());
 
         if (!lexScanner.getToken().equals("end_kw")) {
-            result.raiseError("end_kw", lexScanner.getToken());
+            result.raiseError("end_kw", lexScanner);
             return result;
         }
 
@@ -228,7 +249,7 @@ class SynParser {
             break;
 
             default:
-            statement.raiseError("unknown", lexScanner.getToken());
+            statement.raiseError("unknown", lexScanner);
             break;
         }
 
@@ -293,7 +314,7 @@ class SynParser {
         lexScanner.nextToken();
 
         if(!getOpClass().equals("assignment_op")) {
-            result.raiseError("assignment_op", getOpClass());
+            result.raiseError("assignment_op", lexScanner);
         }
 
         lexScanner.nextToken();
@@ -322,7 +343,7 @@ class SynParser {
         Node result = new Node("if_statement", null);
 
         if(!lexScanner.getToken().equals("if_kw")) {
-            result.raiseError("if_kw", lexScanner.getToken());
+            result.raiseError("if_kw", lexScanner);
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -353,7 +374,7 @@ class SynParser {
         Node result = new Node("while_statement", null);
 
         if(!lexScanner.getToken().equals("while_kw")) {
-            result.raiseError("while_kw", lexScanner.getToken());
+            result.raiseError("while_kw", lexScanner);
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -363,7 +384,7 @@ class SynParser {
         result.addChild(block());
 
         if(!lexScanner.getToken().equals("end_kw")) {
-            result.raiseError("end_kw", lexScanner.getToken());
+            result.raiseError("end_kw", lexScanner);
         }
 
         return result;
@@ -373,21 +394,21 @@ class SynParser {
         Node result = new Node("for_statement", null);
 
         if(!lexScanner.getToken().equals("for_kw")) {
-            result.raiseError("for_kw", lexScanner.getToken());
+            result.raiseError("for_kw", lexScanner);
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
         lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("identifier")) {
-            result.raiseError("identifier", lexScanner.getToken());
+            result.raiseError("identifier", lexScanner);
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
         lexScanner.nextToken();
 
         if (!lexScanner.getToken().equals("assign_op")) {
-            result.raiseError("assign_op", lexScanner.getToken());
+            result.raiseError("assign_op", lexScanner);
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -399,7 +420,7 @@ class SynParser {
         result.addChild(block());
 
         if(!lexScanner.getToken().equals("end_kw")) {
-            result.raiseError("end_kw", lexScanner.getToken());
+            result.raiseError("end_kw", lexScanner);
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -412,7 +433,7 @@ class SynParser {
         Node step = null;
 
         if(!lexScanner.getToken().equals("print_kw")) {
-            result.raiseError("print_kw", lexScanner.getToken());
+            result.raiseError("print_kw", lexScanner);
         }
 
         result.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
@@ -470,7 +491,7 @@ class SynParser {
     }
     
     // prints the syntactic rules of the node
-    void printOutput(Node n){
+    void printOutput(Node n) throws Exception {
         StringBuilder out;
         Stack<Node> q = new Stack<>();
         Stack<Node> i = new Stack<>();
@@ -480,6 +501,8 @@ class SynParser {
         ArrayList<Node> children;
         ArrayList<String> typeArray;
         Node node;
+
+        Exception ex = null;
 
         while(q.size() > 0) {
             node = q.pop();
@@ -495,8 +518,12 @@ class SynParser {
                         for (Node x : children) {
                             if (isKeyword(x)) {
                                 out.append(x.getNodeValue() + ' ');
-                            } else {
+                            }else {
                                 out.append("<" + x.getNodeType() + "> ");
+                            }
+
+                            if (x.getError() == 2) {
+                                ex = new Exception("Expected " + x.getErrorToken() + " at line " + x.getErrorLine() + " column " + x.getErrorPos() + ".\n");
                             }
 
                             i.add(x);
@@ -518,5 +545,6 @@ class SynParser {
         }
 
         System.out.println(printLits);
+        if (ex != null) throw ex;
     }
 }
