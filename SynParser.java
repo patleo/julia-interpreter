@@ -123,7 +123,7 @@ class SynParser {
     // test if a node contains a keyword or literal
     boolean isKeyword(Node node) {
         String nodeType = node.getNodeType();
-        return (nodeType.matches("(.*(_kw|_lt))"));
+        return (nodeType.matches("(.*(_kw|paren_lt))"));
     }
     
     String getOpClass() {
@@ -543,9 +543,9 @@ class SynParser {
             
             if(node.getNodeValue() != null && !isKeyword(node)){
                 if (node.getNodeType().equals("identifier")) {
-                    printLits += "".format("%s -> '%s'\n", "id", node.getNodeValue());
+                    printLits += "".format("%s -> %s\n", node.getNodeValue(), "id");
                 } else {
-                    printLits += "".format("<%s> -> '%s'\n", node.getNodeType(), node.getNodeValue());
+                    printLits += "".format("%s -> <%s>\n", node.getNodeValue(), node.getNodeType());
                 }
             }
         }
