@@ -104,19 +104,25 @@ class SynParser {
         // flag the node as being erroneous
         void setFlag() { this.errorFlag = true; }
 
-        // marks the node with an error statement to be raised when the print output reaches it
+        // marks the node with an error statement to be raised when the print output reaches it 
         void raiseError(String expToken, LexScanner scanner) { 
-            this.errorCode      = 2;
-            this.errorLine      = scanner.getLine();
-            this.errorPos       = scanner.getPosition();
-            this.errorExpected  = expToken;
+            //Checks to make sure they don't match and an error hasn't already been raised for that node
+            if(!(expToken.equals(scanner.getToken())) & this.errorCode < 2){
+                this.errorCode      = 2;
+                this.errorLine      = scanner.getLine();
+                this.errorPos       = scanner.getPosition();
+                this.errorExpected  = expToken;
+            }
         }
         
         void raiseError(String expToken, LexScanner scanner, int customCode) { 
-            this.errorCode      = customCode;
-            this.errorLine      = scanner.getLine();
-            this.errorPos       = scanner.getPosition();
-            this.errorExpected  = expToken;
+            //Checks to make sure they don't match and an error hasn't already been raised for that node
+            if(!(expToken.equals(scanner.getToken())) & this.errorCode < 2){
+                this.errorCode      = customCode;
+                this.errorLine      = scanner.getLine();
+                this.errorPos       = scanner.getPosition();
+                this.errorExpected  = expToken;
+            }
         }
     }
 
@@ -397,7 +403,6 @@ class SynParser {
         
         //get variable value
         int varValue = calculateValue(arithExp);
-        System.out.printf("Variable: %s = %d\n", varName, varValue);
         symbolTable.put(varName, varValue);
         
         // ... <assignment_op>
