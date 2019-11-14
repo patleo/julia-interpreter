@@ -389,7 +389,6 @@ class SynParser {
         
         //get variable value
         int varValue = calculateValue(arithExp);
-        System.out.printf("Variable: %s = %d\n", varName, varValue);
         symbolTable.put(varName, varValue);
         
         // ... <assignment_op>
