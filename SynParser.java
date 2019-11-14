@@ -91,6 +91,7 @@ class SynParser {
         int getErrorLine()      { return this.errorLine; }
         int getErrorPos()       { return this.errorPos; }
         String getErrorToken()  { return this.errorExpected; }
+
         // marks the node with an error statement to be raised when the print output reaches it
         void raiseError(String expToken, LexScanner scanner) { 
             if(!(expToken.equals(scanner.getToken()))){
@@ -101,6 +102,14 @@ class SynParser {
             }
         }
         
+        void raiseError(String expToken, LexScanner scanner, int customCode) { 
+            if(!(expToken.equals(scanner.getToken()))){
+                this.errorCode      = customCode;
+                this.errorLine      = scanner.getLine();
+                this.errorPos       = scanner.getPosition();
+                this.errorExpected  = expToken;
+            }
+        }
     }
 
 
@@ -146,19 +155,19 @@ class SynParser {
     }
     
     void buildGrammar(){
-        grammar.put("program", "function id ( ) <block> en");
-        grammar.put("block", "<statement> | <statement> <block");
+        grammar.put("program", "function id ( ) <block> end");
+        grammar.put("block", "<statement> | <statement> <block>");
         grammar.put("statement", "<if_statement> | <assignment_statement> | <while_statement> | <print_statement> | <for_statement>");
         grammar.put("if_statement", "if <boolean_expression>  <block> else <block> end");
         grammar.put("while_statement", "while <boolean_expression> <block> end");
         grammar.put("assignment_statement", "id <assignment_operator> <arithmetic_expression>");
-        grammar.put("for_statement", "for id = <iter><block>end");
+        grammar.put("for_statement", "for id = <iter> <block> end");
         grammar.put("print_statement", "print ( <arithmetic_expression> )");
-        grammar.put("iter", "<arithmetic_expression> : <arithmetic_expressio");
-        grammar.put("boolean_expression", "<relative_op> <arithmetic_expression> <arithmetic_express");
+        grammar.put("iter", "<arithmetic_expression> : <arithmetic_expression>");
+        grammar.put("boolean_expression", "<relative_op> <arithmetic_expression> <arithmetic_expression>");
         grammar.put("relative_op", "le_operator | lt_operator | ge_operator | gt_operator | eq_operator | ne_operator");
         grammar.put("arithmetic_expression", "<id> | <literal_integer> | <binary_expression");
-        grammar.put("binary_expression", "<arithmetic_op> <arithmetic_expression> <arithmetic_expression");
+        grammar.put("binary_expression", "<arithmetic_op> <arithmetic_expression> <arithmetic_expression>");
         grammar.put("arithmetic_op", "add_operator | sub_operator | mul_operator | div_operator | mod_operator | exp_operator | rev_div_operator");
     }
     
@@ -227,7 +236,7 @@ class SynParser {
         // call to nextToken() shouldn't occur here as it is called at the end of block
 
         if (!lexScanner.getToken().equals("end_kw")) {
-            result.raiseError("end_kw", lexScanner);
+            result.raiseError("end_kw", lexScanner, 3);
             return result;
         }
 
@@ -390,7 +399,8 @@ class SynParser {
 
         return result;
     }
-    // iter expression
+
+    // iteration expression
     Node iter() throws IOException {
         // <iter> -> ...
         Node result = new Node("iter", null);
@@ -412,7 +422,8 @@ class SynParser {
 
         return result;
     }
-    // If statement
+
+    // if statement
     Node ifStatement() throws IOException{
         // <if_statement> -> ...
         Node result = new Node("if_statement", null);
@@ -445,7 +456,7 @@ class SynParser {
 
         
         if(!lexScanner.getToken().equals("end_kw")) {
-            error("end_kw", lexScanner.getToken());
+            result.raiseError("end_kw", lexScanner, 3);
         }
         
         // ... end
@@ -475,7 +486,7 @@ class SynParser {
         // call to nextToken() shouldn't occur here as it is called at the end of block
 
         if(!lexScanner.getToken().equals("end_kw")) {
-            result.raiseError("end_kw", lexScanner);
+            result.raiseError("end_kw", lexScanner, 3);
         }
 
         // ... end
@@ -521,7 +532,7 @@ class SynParser {
         // call to nextToken() shouldn't occur here as it is called at the end of block
 
         if(!lexScanner.getToken().equals("end_kw")) {
-            result.raiseError("end_kw", lexScanner);
+            result.raiseError("end_kw", lexScanner, 3);
         }
 
         // ... end
@@ -713,15 +724,7 @@ class SynParser {
                             } else {
                                 out.append("<" + x.getNodeType() + "> ");
                             }
-                            // if the node is the source of an error then raise exception
-                            if (x.getError() == 2) {
-                                ex = new Exception("Expected " + x.getErrorToken() + " at line " + x.getErrorLine() + " token " + x.getErrorPos() + ".\nCorrect grammar for " + x.getNodeType() + " is " + grammar.get(x.getNodeType()) + ".\n");
-                            }
-                            if(ex != null){
-                                printLits += out.toString();
-                                System.out.println(printLits);
-                                throw ex;
-                            }
+
                             i.add(x);
                         }
                         
@@ -733,15 +736,27 @@ class SynParser {
                         q.add(i.pop());
                     }
                 }
-            }
-            // if there's a terminating node with a value such as an integer literal or an identifier add to end of output string
-            if(node.getNodeValue() != null && !isKeyword(node)){
-                if (node.getNodeType().equals("identifier")) {
-                    printLits += "".format("%s -> %s\n", node.getNodeValue(), "id");
-                } else {
-                    printLits += "".format("%s -> <%s>\n", node.getNodeValue(), node.getNodeType());
+
+                // if the node is the source of an error then raise exception
+                if (node.getError() == 2) {
+                    ex = new Exception("Expected " + node.getErrorToken() + " at line " + node.getErrorLine() + " token " + node.getErrorPos() + ".\nCorrect grammar for " + node.getNodeType() + " is " + grammar.get(node.getNodeType()) + ".\n");
+                }
+
+                // if there's a terminating node with a value such as an integer literal or an identifier add to end of output string
+                if(node.getNodeValue() != null && !isKeyword(node)){
+                    if (node.getNodeType().equals("identifier")) {
+                        printLits += "".format("%s -> %s\n", node.getNodeValue(), "id");
+                    } else {
+                        printLits += "".format("%s -> <%s>\n", node.getNodeValue(), node.getNodeType());
+                    }
+                }
+
+                if(ex != null){
+                    System.out.println(printLits);
+                    throw ex;
                 }
             }
+
         }
 
         System.out.println(printLits);
