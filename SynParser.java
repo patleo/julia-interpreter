@@ -67,7 +67,7 @@ class SynParser {
         void addChild(Node ... children) {
             for (Node x : children) { addChild(x); }
         }
-
+        // returns an array of the node's children
         ArrayList<Node> getChildren() { return nodeList; }
         
         // set the parent reference of the node
@@ -87,11 +87,10 @@ class SynParser {
         }
         
         int getError() { return this.errorCode; }
-
         int getErrorLine()      { return this.errorLine; }
         int getErrorPos()       { return this.errorPos; }
         String getErrorToken()  { return this.errorExpected; }
-
+        // marks the node with an error statement to be raised when the print output reaches it
         void raiseError(String expToken, LexScanner scanner) { 
             if(!(expToken.equals(scanner.getToken()))){
                 System.out.printf("Expecting %s, received %s\n", expToken, scanner.getToken());
@@ -109,7 +108,7 @@ class SynParser {
     Node createNode(String nodeType, Node ... nodes) {
         return new Node(nodeType, null, nodes);
     }
-        
+    // creates a terminal node
     Node createLeaf(String nodeType, String value) {
         return new Node(nodeType, value);
     }
@@ -303,7 +302,7 @@ class SynParser {
     // Arithmetic expression
     Node arithExp() throws IOException{
         // <arithmetic_expression> -> ...
-
+        Node result = new Node("arithmetic_expression", null);
         Node node;
         if(lexScanner.getToken().equals("identifier") | lexScanner.getToken().equals("integer_lt")){
             // ... id
@@ -312,8 +311,8 @@ class SynParser {
             // ... <binary_expression>
             node = binExp();
         }
-
-        return createNode("arithmetic_expression", node);
+        result.addChild(node);
+        return result;
     }
 
     // Binary Expression
@@ -373,7 +372,7 @@ class SynParser {
 
         return result;
     }
-
+    // iter expression
     Node iter() throws IOException {
         // <iter> -> ...
         Node result = new Node("iter", null);
@@ -395,7 +394,7 @@ class SynParser {
 
         return result;
     }
-    
+    // If statement
     Node ifStatement() throws IOException{
         // <if_statement> -> ...
         Node result = new Node("if_statement", null);
@@ -635,12 +634,12 @@ class SynParser {
         }
     }
     
-    // print a tree starting at the root (depth zero)
+    // print a tree starting at the root (depth zero) <for testing purposes>
     void printTree(Node n) {
         printTree(n, 0);
     }
 
-    // temporary print function
+    // print tree <for testing purposes>
     void printTree(Node n, int depth) {
         ++depth;
 
@@ -683,10 +682,10 @@ class SynParser {
             if (node != null) {
                 out = new StringBuilder();
                 children = node.getChildren();
-
+                // If not a keyword or string literal ie. if or ( wrap output in <> for non terminal node ie <statement>
                 if (!isKeyword(node)) {
                     out.append("<" + node.getNodeType() + "> -> ");
-
+                    //perform same output modifying for children check for error and add children to stack
                     if (children.size() > 0) {
                         for (Node x : children) {
                             if (isKeyword(x)) {
@@ -696,11 +695,10 @@ class SynParser {
                             } else {
                                 out.append("<" + x.getNodeType() + "> ");
                             }
-
+                            // if the node is the source of an error then raise exception
                             if (x.getError() == 2) {
                                 ex = new Exception("Expected " + x.getErrorToken() + " at line " + x.getErrorLine() + " column " + x.getErrorPos() + ".\n");
                             }
-
                             i.add(x);
                         }
                         
@@ -713,7 +711,7 @@ class SynParser {
                     }
                 }
             }
-            
+            // if there's a terminating node with a value such as an integer literal or an identifier add to end of output string
             if(node.getNodeValue() != null && !isKeyword(node)){
                 if (node.getNodeType().equals("identifier")) {
                     printLits += "".format("%s -> %s\n", node.getNodeValue(), "id");
