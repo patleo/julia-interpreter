@@ -25,10 +25,11 @@ class SynParser {
         private String nodeType;
         private String value;
 
-        private int     errorCode;
-        private int     errorLine;
-        private int     errorPos;
-        private String  errorExpected;
+        private boolean errorFlag;      // set by parser when found erroneous
+        private int     errorCode;      // 0-normal; 1-child; 2-current; 3-other; 
+        private int     errorLine;      // line in which the error occured
+        private int     errorPos;       // cursor position which the error occured
+        private String  errorExpected;  // expected token value
         
         Node() {
             nodeList = new ArrayList<Node>();
@@ -36,6 +37,7 @@ class SynParser {
             this.nodeType = null;
             this.value = null;
 
+            this.errorFlag = false;
             this.errorCode = 0;
             this.errorLine = 0;
             this.errorPos  = 0;
@@ -47,6 +49,7 @@ class SynParser {
             this.nodeType = nodeType;
             this.value = value;
 
+            this.errorFlag = false;
             this.errorCode = 0;
             this.errorLine = 0;
             this.errorPos  = 0;
@@ -59,7 +62,12 @@ class SynParser {
             if (child != null) {
                 child.setParent(this);
                 nodeList.add(child);
-                if (child.getError() != 0) { this.errorCode = 1; }
+
+                // if error code isn't already set, set it to code for
+                // errors caused by children
+                if (this.errorCode == 0 && child.getError() != 0) {
+                    this.errorCode = 1;
+                }
             }
         }
 
@@ -87,28 +95,28 @@ class SynParser {
             return this.value;
         }
         
-        int getError() { return this.errorCode; }
+        boolean isFlagged()     { return this.errorFlag; }
+        int getError()          { return this.errorCode; }
         int getErrorLine()      { return this.errorLine; }
         int getErrorPos()       { return this.errorPos; }
         String getErrorToken()  { return this.errorExpected; }
 
+        // flag the node as being erroneous
+        void setFlag() { this.errorFlag = true; }
+
         // marks the node with an error statement to be raised when the print output reaches it
         void raiseError(String expToken, LexScanner scanner) { 
-            if(!(expToken.equals(scanner.getToken()))){
-                this.errorCode      = 2;
-                this.errorLine      = scanner.getLine();
-                this.errorPos       = scanner.getPosition();
-                this.errorExpected  = expToken;
-            }
+            this.errorCode      = 2;
+            this.errorLine      = scanner.getLine();
+            this.errorPos       = scanner.getPosition();
+            this.errorExpected  = expToken;
         }
         
         void raiseError(String expToken, LexScanner scanner, int customCode) { 
-            if(!(expToken.equals(scanner.getToken()))){
-                this.errorCode      = customCode;
-                this.errorLine      = scanner.getLine();
-                this.errorPos       = scanner.getPosition();
-                this.errorExpected  = expToken;
-            }
+            this.errorCode      = customCode;
+            this.errorLine      = scanner.getLine();
+            this.errorPos       = scanner.getPosition();
+            this.errorExpected  = expToken;
         }
     }
 
@@ -307,22 +315,23 @@ class SynParser {
     Node boolExp() throws IOException{
         // <boolean_expression> -> ...
         Node node = new Node("boolean_expression", null);
+
         //Check if relative operator
-        if(getOpClass().equals("relative_op")){
-            // ... <relative_op>
-            node.addChild(new Node("relative_op", lexScanner.getLexeme()));
-            lexScanner.nextToken();
-
-            // ... <arithmetic_expression>
-            node.addChild(arithExp());
-            lexScanner.nextToken();
-
-            // ... <arithmetic_expression>
-            node.addChild(arithExp());
-        } else {
-            //throw error
-            error("relative_op", lexScanner.getToken());
+        if(!getOpClass().equals("relative_op")){
+            node.raiseError("relative_op", lexScanner);
         }
+
+        // ... <relative_op>
+        node.addChild(new Node(lexScanner.getToken(), lexScanner.getLexeme()));
+        lexScanner.nextToken();
+
+        // ... <arithmetic_expression>
+        node.addChild(arithExp());
+        lexScanner.nextToken();
+
+        // ... <arithmetic_expression>
+        node.addChild(arithExp());
+
         return node;
     }
 
@@ -362,7 +371,7 @@ class SynParser {
             // ... <arithmetic_expression>
             result.addChild(arithExp());
         }else{
-            error("arithmetic_op", lexScanner.getToken());
+            result.raiseError("arithmetic_op", lexScanner);
         }
 
         return result;
@@ -725,20 +734,27 @@ class SynParser {
                                 out.append("<" + x.getNodeType() + "> ");
                             }
 
+                            // if the node is the source of an error then raise exception
+                            if (ex == null && x.getError() == 2) {
+                                System.out.println(x.getErrorToken());
+                                ex = new Exception("Expected " + x.getErrorToken() + " at line " + x.getErrorLine() + " token " + x.getErrorPos() + ".\nCorrect grammar for " + x.getNodeType() + " is " + grammar.get(x.getNodeType()) + ".\n");
+                                x.setFlag();
+                            }
+
                             i.add(x);
                         }
                         
                         out.append("\b\n");
                         printLits += out.toString();
-                    }
 
-                    while (i.size() > 0) {
-                        q.add(i.pop());
+                        while (i.size() > 0) {
+                            q.add(i.pop());
+                        }
                     }
                 }
 
                 // if the node is the source of an error then raise exception
-                if (node.getError() == 2) {
+                if (ex == null && node.getNodeType().equals("program") && node.getError() == 2) {
                     ex = new Exception("Expected " + node.getErrorToken() + " at line " + node.getErrorLine() + " token " + node.getErrorPos() + ".\nCorrect grammar for " + node.getNodeType() + " is " + grammar.get(node.getNodeType()) + ".\n");
                 }
 
@@ -750,13 +766,12 @@ class SynParser {
                         printLits += "".format("%s -> <%s>\n", node.getNodeValue(), node.getNodeType());
                     }
                 }
-
-                if(ex != null){
-                    System.out.println(printLits);
-                    throw ex;
-                }
             }
 
+            if (ex != null && node.isFlagged()) {
+                System.out.println(printLits);
+                throw ex;
+            }
         }
 
         System.out.println(printLits);
