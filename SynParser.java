@@ -17,7 +17,8 @@ import java.util.Map;
 class SynParser {
     private LexScanner lexScanner;
     private Map<String,Integer> symbolTable = new HashMap<String, Integer>();
-
+    private Map<String,String> grammar = new HashMap<String,String>();
+    
     class Node {
         private Node parentNode;
         private ArrayList<Node> nodeList;
@@ -93,7 +94,6 @@ class SynParser {
         // marks the node with an error statement to be raised when the print output reaches it
         void raiseError(String expToken, LexScanner scanner) { 
             if(!(expToken.equals(scanner.getToken()))){
-                System.out.printf("Expecting %s, received %s\n", expToken, scanner.getToken());
                 this.errorCode      = 2;
                 this.errorLine      = scanner.getLine();
                 this.errorPos       = scanner.getPosition();
@@ -141,7 +141,25 @@ class SynParser {
     // parser constructor
     SynParser(String source) throws Exception {
         lexScanner = new LexScanner(source);
+        buildGrammar();
         parse();
+    }
+    
+    void buildGrammar(){
+        grammar.put("program", "function id ( ) <block> en");
+        grammar.put("block", "<statement> | <statement> <block");
+        grammar.put("statement", "<if_statement> | <assignment_statement> | <while_statement> | <print_statement> | <for_statement>");
+        grammar.put("if_statement", "if <boolean_expression>  <block> else <block> end");
+        grammar.put("while_statement", "while <boolean_expression> <block> end");
+        grammar.put("assignment_statement", "id <assignment_operator> <arithmetic_expression>");
+        grammar.put("for_statement", "for id = <iter><block>end");
+        grammar.put("print_statement", "print ( <arithmetic_expression> )");
+        grammar.put("iter", "<arithmetic_expression> : <arithmetic_expressio");
+        grammar.put("boolean_expression", "<relative_op> <arithmetic_expression> <arithmetic_express");
+        grammar.put("relative_op", "le_operator | lt_operator | ge_operator | gt_operator | eq_operator | ne_operator");
+        grammar.put("arithmetic_expression", "<id> | <literal_integer> | <binary_expression");
+        grammar.put("binary_expression", "<arithmetic_op> <arithmetic_expression> <arithmetic_expression");
+        grammar.put("arithmetic_op", "add_operator | sub_operator | mul_operator | div_operator | mod_operator | exp_operator | rev_div_operator");
     }
     
     // entry point for the parser
@@ -697,7 +715,12 @@ class SynParser {
                             }
                             // if the node is the source of an error then raise exception
                             if (x.getError() == 2) {
-                                ex = new Exception("Expected " + x.getErrorToken() + " at line " + x.getErrorLine() + " column " + x.getErrorPos() + ".\n");
+                                ex = new Exception("Expected " + x.getErrorToken() + " at line " + x.getErrorLine() + " token " + x.getErrorPos() + ".\nCorrect grammar for " + x.getNodeType() + " is " + grammar.get(x.getNodeType()) + ".\n");
+                            }
+                            if(ex != null){
+                                printLits += out.toString();
+                                System.out.println(printLits);
+                                throw ex;
                             }
                             i.add(x);
                         }
@@ -722,6 +745,6 @@ class SynParser {
         }
 
         System.out.println(printLits);
-        if (ex != null) throw ex;
+        //if (ex != null) throw ex;
     }
 }
