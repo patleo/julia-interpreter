@@ -92,9 +92,10 @@ class SynParser {
         int getErrorPos()       { return this.errorPos; }
         String getErrorToken()  { return this.errorExpected; }
 
-        // marks the node with an error statement to be raised when the print output reaches it
+        // marks the node with an error statement to be raised when the print output reaches it 
         void raiseError(String expToken, LexScanner scanner) { 
-            if(!(expToken.equals(scanner.getToken()))){
+            //Checks to make sure they don't match and an error hasn't already been raised for that node
+            if(!(expToken.equals(scanner.getToken())) & this.errorCode < 2){
                 this.errorCode      = 2;
                 this.errorLine      = scanner.getLine();
                 this.errorPos       = scanner.getPosition();
