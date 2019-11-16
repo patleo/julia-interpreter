@@ -16,7 +16,6 @@ import java.util.Map;
 
 class SynParser {
     private LexScanner lexScanner;
-    private Map<String,Integer> symbolTable = new HashMap<String, Integer>();
     private Map<String,String> grammar = new HashMap<String,String>();
     
     class Node {
@@ -402,8 +401,8 @@ class SynParser {
         Node arithExp = arithExp();
         
         //get variable value
-        int varValue = calculateValue(arithExp);
-        symbolTable.put(varName, varValue);
+        //int varValue = calculateValue(arithExp);
+        //symbolTable.put(varName, varValue);
         
         // ... <assignment_op>
         Node assignLit = createLeaf("assignment_op", "=");
@@ -588,6 +587,7 @@ class SynParser {
         return result;
     }
 
+/*
     int calculateValue(Node n){
         
         Queue<Node> q = new LinkedList<>();
@@ -669,6 +669,7 @@ class SynParser {
         
         return result;
     }
+*/
         
     // Formats error and throws exception
     void error(String expToken, String actToken){
