@@ -400,10 +400,6 @@ class SynParser {
         lexScanner.nextToken();
         Node arithExp = arithExp();
         
-        //get variable value
-        //int varValue = calculateValue(arithExp);
-        //symbolTable.put(varName, varValue);
-        
         // ... <assignment_op>
         Node assignLit = createLeaf("assignment_op", "=");
 
@@ -586,90 +582,6 @@ class SynParser {
 
         return result;
     }
-
-/*
-    int calculateValue(Node n){
-        
-        Queue<Node> q = new LinkedList<>();
-        ArrayList<Node> children;
-        int[] values = new int[2];
-        int index = 0;
-        int result;
-        Node node;
-        String opType = null;
-        
-        q.add(n);
-        while(q.size() >0){
-            node = q.remove();
-            //inspect node
-            if(node.getNodeType().equals("arithmetic_op")){
-                opType = node.getNodeValue();
-            }else if(node.getNodeType().equals("identifier")){
-                values[index++] = symbolTable.get(node.getNodeValue());
-            }else if(node.getNodeType().equals("integer_lt")){
-                values[index++] = Integer.parseInt(node.getNodeValue());
-            }
-            //add children
-            children = node.getChildren();
-            if (children.size() > 0) {
-                for (Node x : children) {
-                    q.add(x);
-                }
-            }
-        }
-        if(opType != null){
-            result = performCalc(opType, values, index);
-        }else{
-            result = values[0];
-        }
-        
-        return result;
-    }
-    
-    int performCalc(String operator, int[] operand, int index){
-        int result = 0;
-        
-        switch (operator) {
-            case "+":
-            if (index == 1){
-                result = operand[0];
-            }else{
-                result = operand[0] + operand[1];
-            }
-            break;
-            
-            case "-":
-            if(index == 1){
-                result = - operand[0];
-            }else{
-                result = operand[0] - operand[1];
-            }
-            break;
-                
-            case "*":
-            result = operand[0] * operand[1];
-            break;
-                
-            case "/":
-            result = operand[0] / operand[1];
-            break;
-                
-            case "%":
-            result = operand[0] % operand[1];
-            break;
-                
-            case "\\":
-            result = operand[1] / operand[0];
-            break;
-                
-            case "^":
-            result = (int) Math.pow(operand[0], operand[1]);
-            break;
-        }
-        
-        return result;
-    }
-*/
         
     // Formats error and throws exception
     void error(String expToken, String actToken){
@@ -779,8 +691,6 @@ class SynParser {
                 throw ex;
             }
         }
-
         System.out.println(printLits);
-        //if (ex != null) throw ex;
     }
 }

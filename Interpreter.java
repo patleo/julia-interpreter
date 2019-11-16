@@ -12,10 +12,7 @@ class Interpreter{
     Interpreter(){
         Map<String,Integer> symbolTable = new HashMap<String, Integer>();
     }
-    
-    
-    
-    
+    //Calculates new values for assignment statements
     int calculateValue(SynParser.Node n){
         
         Queue<SynParser.Node> q = new LinkedList<>();
@@ -53,7 +50,7 @@ class Interpreter{
         
         return result;
     }
-    
+    // Performs the appropriate arrithmetic calculation
     int performCalc(String operator, int[] operand, int index){
         int result = 0;
         

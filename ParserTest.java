@@ -23,7 +23,7 @@ class ParserTest {
             // Create an output file name and buffered writer to write to file
             String outFile = args[0] + "-parser_trace_file.txt";
             bw = new BufferedWriter((new FileWriter(outFile)));
-            // Initialize LexScanner with filename of source code
+            // Initialize SynParser with filename of source code
             SynParser parser = new SynParser(args[0]);
             System.out.println();
             bw.close();
