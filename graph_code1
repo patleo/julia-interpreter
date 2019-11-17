@@ -1,0 +1,131 @@
+digraph finite_state_machine {
+
+graph [ordering="out"];
+rankdir=UD;
+
+node [size = 5 fixedsize = true shape = doublecircle color = red fontsize = 5.5  fontname = "times-bold"]; function_kw id0 open_paren0 open_paren1 close_paren0 close_paren1 end_kw id1 ass_op0 ass_op1 ass_op2 int_lt0 int_lt1  id1 id2 id3 id4 id5 print_kw ;
+node [size = 5 fixedsize = true shape = circle color = black fontsize = 5.5 fontname = "times-bold"];
+
+
+subgraph cluster9{
+    label = "program statement";
+    subgraph cluster90{
+        program function_kw id0 open_paren0 close_paren0 block0 end_kw;
+        label ="function f ( ) ... end";
+        labelloc=b;
+        ordering = "out";
+    }
+}
+
+subgraph cluster0{
+    label = "assignment statement 1";
+    subgraph cluster01{
+    stmt0 ass_stmt0 id1 ass_op0 ar_ex0 int_lt0;
+    ordering="out";
+    label="x = 2";
+    labelloc=b;
+    }
+}
+
+subgraph cluster1{
+    label = "assignment statement 2";
+    subgraph cluster10{
+        stmt1 ass_stmt1 id2 ass_op1 ar_ex1 id2 int_lt1;
+        label = "y = 3";
+        labelloc=b;
+        ordering="out";
+    }
+}
+
+subgraph cluster2{
+    label = "assignment statement 3";
+    subgraph cluster20{
+        stmt2 ass_stmt2 id3 ass_op2 ar_ex2 id4;
+        label = "z = y"; 
+        labelloc=b;
+        ordering = "out";
+    }
+}
+
+subgraph cluster3{
+    label = "print statement";
+    subgraph cluster30{
+        stmt3 print_statement print_kw open_paren1 ar_ex3 id5 close_paren1 ;
+        label = "print ( z )";
+        labelloc=b;
+        ordering="out";
+    }
+    
+}
+
+function_kw[label="function_kw\nvalue='function'"];
+id0[label="identifier\nvalue='f'"];
+open_paren0[label="open_\nparen_lt\nvalue='('"];
+close_paren0[label="close_\nparen_lt\nvalue=')'"];
+block0[label="block"];
+end_kw[label="end_kw\nvalue='end'"];
+stmt0[label="statement"];
+ass_stmt0[label="assignment_\nstatement"];
+id1[label="identifier\nvalue='x'"];
+ass_op0[label="assignment_op\nvalue='='"];
+ar_ex0[label="arithmetic_\nexpression"];
+int_lt0[label = "integer_lt\nvalue='2"];
+block1[label="block"];
+stmt1[label="statement"];
+ass_stmt1[label="assinment_\nstatement"];
+id2[label="identifier\nvalue='y'"];
+ass_op1[label="assignment_op\nvalue='='"];
+ar_ex1[label = "arithmetic_\nexpression"];
+int_lt1[label = "integer_lt\nvalue='3'"];
+block2[label="block"];
+stmt2[label="statement"];
+ass_stmt2[label="assignment_\nstatement"];
+id3[label="identifier\nvalue='z'"];
+ass_op2[label="assignment_op\nvalue='='"];
+ar_ex2[label="arithmetic_\nexpression"];
+id4[label="identifier\nvalue='y'"];
+block3[label="block"];
+stmt3[label="statement"];
+print_statement[label="print_\nstatement"];
+print_kw[label="print_kw\nvalue='print'"]
+open_paren1[label="open_\nparen_lt\nvalue='('"];
+close_paren1[label="close_\nparen_lt\nvalue=')'"];
+ar_ex3[label="arithmetic_\nexpression"];
+id5[label="identifier\nvalue='z'"];
+
+program -> function_kw;
+program -> id0;
+program -> open_paren0;
+program -> close_paren0; 
+program -> block0;
+program -> end_kw;
+block0 -> stmt0;
+block0 -> block1;
+stmt0 -> ass_stmt0;
+ass_stmt0 -> id1;
+ass_stmt0 -> ass_op0;
+ass_stmt0 -> ar_ex0;
+ar_ex0 -> int_lt0;
+block1 -> stmt1;
+block1 -> block2;
+stmt1 -> ass_stmt1;
+ass_stmt1 -> id2;
+ass_stmt1 -> ass_op1;
+ass_stmt1 -> ar_ex1;
+ar_ex1 -> int_lt1;
+block2 -> stmt2;
+stmt2 -> ass_stmt2;
+ass_stmt2 -> id3;
+ass_stmt2 -> ass_op2;
+ass_stmt2 -> ar_ex2;
+ar_ex2 -> id4;
+block2 -> block3;
+block3 -> stmt3;
+stmt3 -> print_statement;
+print_statement -> print_kw;
+print_statement -> open_paren1;
+print_statement -> ar_ex3;
+print_statement -> close_paren1;
+ar_ex3 -> id5;
+
+}
