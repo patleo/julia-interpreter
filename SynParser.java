@@ -396,13 +396,10 @@ class SynParser {
         if(!getOpClass().equals("assignment_op")) {
             result.raiseError("assignment_op", lexScanner);
         }
-
-        lexScanner.nextToken();
-        Node arithExp = arithExp();
         
         // ... <assignment_op>
         Node assignLit = createLeaf("assignment_op", "=");
-
+        lexScanner.nextToken();
         // ... <arithmetic_expression>
         result.addChild(idNode, assignLit, arithExp()); 
 
