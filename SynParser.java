@@ -164,7 +164,6 @@ class SynParser {
     SynParser(String source) throws Exception {
         lexScanner = new LexScanner(source);
         buildGrammar();
-        parse();
     }
     
     void buildGrammar(){
@@ -185,7 +184,7 @@ class SynParser {
     }
     
     // entry point for the parser
-    void parse() throws IOException, Exception {
+    Node parse() throws IOException, Exception {
         
         Node result;
         lexScanner.nextToken();
@@ -195,12 +194,12 @@ class SynParser {
         result = program();
 
         //printTree(result);
-
         try {
             printOutput(result);
         } catch (Exception e) {
             throw e;
         }
+        return result;
     }
 
     // returns a parse tree that represents the syntactic structure of the input
