@@ -194,11 +194,11 @@ class SynParser {
         result = program();
 
         //printTree(result);
-        try {
+        /*try {
             printOutput(result);
         } catch (Exception e) {
             throw e;
-        }
+        }*/
         return result;
     }
 
