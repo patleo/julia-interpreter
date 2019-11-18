@@ -7,7 +7,7 @@ class ASTGraph{
     private Map<String,gVizNode> nodeList = new HashMap<String,gVizNode>();
     private String labels;
     private String edges;
-    private String nonTerms;
+    private String terms;
     private ArrayList<String> subgraphs;
     
     class gVizNode{
@@ -65,6 +65,9 @@ class ASTGraph{
                 case "print_statement":
                     fToken = "print_\nstatement";
                     break;
+                case "boolean_expression":
+                    fToken = "boolean_\nexpression";
+                    break;
                 default:
                     fToken = this.tokenType;
                     break;
@@ -86,12 +89,11 @@ class ASTGraph{
     }
     
     ASTGraph(SynParser.Node n){
-        this.labels = this.edges = "";
+        this.labels = this.edges = this.terms = "";
         this.subgraphs = new ArrayList<String>();
-        this.nonTerms = "";
         createGVNodes(n);
         String graph = "digraph x {\n\tgraph [ordering=\"out\"];\n\trankdir=UD;\n\t";
-        graph += "".format("node [size = 5 fixedsize = true shape = doublecircle color = red fontsize = 5.5  fontname = \"times-bold\"];\n\t%s\n\t",this.nonTerms);
+        graph += "".format("node [size = 5 fixedsize = true shape = doublecircle color = red fontsize = 5.5  fontname = \"times-bold\"];\n\t%s\n\t",this.terms);
         graph += "node [size = 5 fixedsize = true shape = circle color = black fontsize = 5.5 fontname = \"times-bold\"];\n";
         System.out.println(graph);
         for(String x : this.subgraphs){
@@ -114,7 +116,7 @@ class ASTGraph{
                 gv.addChild(child);
                 this.edges += "".format("%s -> %s\n",gv.getGName(), child.getGName());
             }
-            if (gv.getToken().equals("statement")){
+            if (gv.getToken().matches("(statement|program)")){
                 createSubgraphs(gv);
             }
             return gv;
@@ -123,24 +125,36 @@ class ASTGraph{
     
     void createSubgraphs(gVizNode gv){
         String sg = "".format("subgraph cluster%d{\n\tsubgraph cluster%d0{\n\t\t", this.subgraphs.size(), this.subgraphs.size());
-        String lt = "";
         LinkedList<gVizNode> queue = new LinkedList<gVizNode>();
         queue.add(gv);
         while(queue.size() > 0){
             gVizNode temp = queue.pop();
             sg += temp.getGName() + " ";
-            if(temp.getValue() != null){
-                lt += temp.getValue() + " ";
-                this.nonTerms += temp.getGName() + " ";
-            }
             for(gVizNode x : temp.getChildren()){
                 queue.add(x);
             }
         }
-        sg += "".format("\n\t\tlabel = \"%s\"\n\t\tlabelloc=b;\n\t\tordering=\"out\";\n\t}\n}\n", lt);
+        String litExp = findLeafs(gv);
+        sg += "".format("\n\t\tlabel = \"%s\"\n\t\tlabelloc=b;\n\t\tordering=\"out\";\n\t}\n}\n", litExp);
         this.subgraphs.add(sg);
     }
     
+    String findLeafs(gVizNode gv){
+        String out = "";
+        if(gv != null){
+            if(gv.getValue() != null){
+                this.terms += gv.getGName() + " ";
+                out += gv.getValue() + " " + out;
+            }else if(gv.getToken().equals("block")){
+                out += "block ";
+            }else{
+                for(gVizNode v : gv.getChildren()){
+                    out += findLeafs(v);
+                }
+            }
+        }
+        return out;
+    }
     
     public static void main(String[] args) throws Exception {
         SynParser function = new SynParser(args[0]);
