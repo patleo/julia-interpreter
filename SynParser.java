@@ -164,7 +164,7 @@ class SynParser {
     SynParser(String source) throws Exception {
         lexScanner = new LexScanner(source);
         buildGrammar();
-        parse();
+        //parse();
     }
     
     void buildGrammar(){
@@ -188,7 +188,7 @@ class SynParser {
     void parse() throws IOException, Exception {
         
         Node result;
-        lexScanner.nextToken();
+        //lexScanner.nextToken();
 
         // construct a parse tree of the source file and print the grammar
         // rules associated with each sentence
@@ -207,6 +207,8 @@ class SynParser {
     Node program() throws IOException {
         // <program> -> ...
         Node result = new Node("program", null);
+
+        lexScanner.nextToken();
         
         if(!lexScanner.getToken().equals("function_kw")) {
             result.raiseError("function_kw", lexScanner);
