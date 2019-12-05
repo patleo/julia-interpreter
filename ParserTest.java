@@ -25,6 +25,7 @@ class ParserTest {
             bw = new BufferedWriter((new FileWriter(outFile)));
             // Initialize SynParser with filename of source code
             SynParser parser = new SynParser(args[0]);
+            parser.parse();
             System.out.println();
             bw.close();
         } catch(FileNotFoundException e) {

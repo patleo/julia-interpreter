@@ -36,9 +36,38 @@ class Interpreter{
     }
 
     void interpret(SynParser.Node program) {
-        // in an error-free AST, only statement nodes should be
+        // in an error-free AST, only block nodes should be
         // present as children of the program, so no need to check
 
+        ArrayList<SynParser.Node> children = program.getChildren();
+        block(children.get(4));
+    }
+
+    void block(SynParser.Node block) {
+        // in an error-free AST, only statement nodes, possibly followed 
+        // by a block, should be present as children of the block so no 
+        // need to check
+
+        ArrayList<SynParser.Node> children = block.getChildren();
+        statement(children.get(0));
+        if (children.size() > 1) block(children.get(1));
+    }
+
+    void statement(SynParser.Node statement) {
+        SynParser.Node child = statement.getChildren().get(0); 
+        switch (child.getNodeType()) {
+            case "print_statement":
+                printStatement(child);
+                break;
+                
+            default:
+                System.out.println(child.getNodeType() + " not currently implemented.");
+                break;
+        }
+    }
+
+    void printStatement(SynParser.Node print) {
+        System.out.println(calculateValue(print.getChildren().get(2)));
     }
 
     //Calculates new values for assignment statements
@@ -78,6 +107,7 @@ class Interpreter{
         
         return result;
     }
+
     // Performs the appropriate arrithmetic calculation
     int performCalc(String operator, int[] operand, int index){
         int result = 0;
