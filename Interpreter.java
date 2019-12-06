@@ -59,7 +59,9 @@ class Interpreter{
             case "print_statement":
                 printStatement(child);
                 break;
-                
+            case "assignment_statement":
+                assignStatement(child);
+                break;
             default:
                 System.out.println(child.getNodeType() + " not currently implemented.");
                 break;
@@ -68,6 +70,15 @@ class Interpreter{
 
     void printStatement(SynParser.Node print) {
         System.out.println(calculateValue(print.getChildren().get(2)));
+    }
+    
+    void assignStatement(SynParser.Node assign){
+        //Get variable name
+        String var_name = assign.getChildren().get(0).getNodeValue();
+        //Get value of arithmetic expression
+        int value = calculateValue(assign.getChildren().get(2));
+        //Update symbol table
+        symbolTable.put(var_name, value);
     }
 
     //Calculates new values for assignment statements
