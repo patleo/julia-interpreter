@@ -3,7 +3,7 @@
  * Term:        Fall 2019
  * Name:        Patrick Sweeney, Christian Byrne, and Sagar Patel
  * Instructor:  Deepa Muralidhar
- * Project:     Deliverable 2 Parser - Java
+ * Project:     Deliverable 3 Interpreter - Java
  */
 
 import java.io.FileNotFoundException;
@@ -91,25 +91,41 @@ class Interpreter{
         SynParser.Node node;
         String opType = null;
         
-        q.add(n);
-        while(q.size() > 0){
-            node = q.remove();
-            //inspect node
-            if(node.getNodeType().equals("arithmetic_op")){
-                opType = node.getNodeValue();
-            }else if(node.getNodeType().equals("identifier")){
-                values[index++] = symbolTable.get(node.getNodeValue());
-            }else if(node.getNodeType().equals("integer_lt")){
-                values[index++] = Integer.parseInt(node.getNodeValue());
-            }
-            //add children
-            children = node.getChildren();
+        //add children of the arithmetic node
+        if (n.getNodeType().equals("arithmetic_expression")) {
+            children = n.getChildren();
             if (children.size() > 0) {
                 for (SynParser.Node x : children) {
                     q.add(x);
                 }
             }
         }
+
+        while(q.size() > 0){
+            node = q.remove();
+
+            // inspect node contents
+            if(node.getNodeType().equals("arithmetic_op")){
+                opType = node.getNodeValue();
+            }else if(node.getNodeType().equals("identifier")){
+                values[index++] = symbolTable.get(node.getNodeValue());
+            }else if(node.getNodeType().equals("integer_lt")){
+                values[index++] = Integer.parseInt(node.getNodeValue());
+            // if node is a binary expression, add its children to the queue
+            } else if(node.getNodeType().equals("binary_expression")) {
+                children = node.getChildren();
+                if (children.size() > 0) {
+                    for (SynParser.Node x : children) {
+                        q.add(x);
+                    }
+                }
+            // this only leaves the possibility of the node being the root of 
+            // an assignment statement. proceed to calculate its value.
+            } else {
+                values[index++] = calculateValue(node);
+            }
+        }
+
         if(opType != null){
             result = performCalc(opType, values, index);
         }else{

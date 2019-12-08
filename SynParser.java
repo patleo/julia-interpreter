@@ -194,7 +194,7 @@ class SynParser {
         // rules associated with each sentence
         result = program();
 
-        //printTree(result);
+        printTree(result);
 
         try {
             printOutput(result);
